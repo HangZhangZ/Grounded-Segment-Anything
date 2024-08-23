@@ -138,7 +138,7 @@ def show_box(box, ax, label):
     ax.text(x0, y0, label)
 
 
-def save_mask_data(output_dir, mask_list, box_list, label_list):#tags_chinese
+def save_mask_data(output_dir, mask_list, box_list, label_list, id):#tags_chinese
     value = 0  # 0 for background
 
     mask_img = torch.zeros(mask_list.shape[-2:])
@@ -147,7 +147,7 @@ def save_mask_data(output_dir, mask_list, box_list, label_list):#tags_chinese
     plt.figure(figsize=(10, 10))
     plt.imshow(mask_img.numpy())
     plt.axis('off')
-    plt.savefig(os.path.join(output_dir, 'mask.jpg'), bbox_inches="tight", dpi=300, pad_inches=0.0)
+    plt.savefig(os.path.join(output_dir, 'mask_%d.jpg'%(id)), bbox_inches="tight", dpi=300, pad_inches=0.0)
 
     json_data = {
         # 'tags_chinese': tags_chinese,
