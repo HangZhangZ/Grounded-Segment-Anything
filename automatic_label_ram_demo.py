@@ -7,6 +7,7 @@ import torch
 import torchvision
 from PIL import Image
 import litellm
+import glob
 
 # Grounding DINO
 import GroundingDINO.groundingdino.datasets.transforms as T
@@ -25,8 +26,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Recognize Anything Model & Tag2Text
-from ram.models import ram
+# from ram.models import ram
 from ram import inference_ram
+from ram.models import ram_plus
 import torchvision.transforms as TS
 
 # ChatGPT or nltk is required when using tags_chineses
@@ -136,7 +138,7 @@ def show_box(box, ax, label):
     ax.text(x0, y0, label)
 
 
-def save_mask_data(output_dir, tags_chinese, mask_list, box_list, label_list):
+def save_mask_data(output_dir, mask_list, box_list, label_list):#tags_chinese
     value = 0  # 0 for background
 
     mask_img = torch.zeros(mask_list.shape[-2:])
@@ -148,7 +150,7 @@ def save_mask_data(output_dir, tags_chinese, mask_list, box_list, label_list):
     plt.savefig(os.path.join(output_dir, 'mask.jpg'), bbox_inches="tight", dpi=300, pad_inches=0.0)
 
     json_data = {
-        'tags_chinese': tags_chinese,
+        # 'tags_chinese': tags_chinese,
         'mask':[{
             'value': value,
             'label': 'background'
@@ -187,7 +189,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--use_sam_hq", action="store_true", help="using sam-hq for prediction"
     )
-    parser.add_argument("--input_image", type=str, required=True, help="path to image file")
+    parser.add_argument("--input_image", type=str, help="path to image file")
     parser.add_argument("--split", default=",", type=str, help="split for text prompt")
     parser.add_argument("--openai_key", type=str, help="key for chatgpt")
     parser.add_argument("--openai_proxy", default=None, type=str, help="proxy for chatgpt")
@@ -195,8 +197,8 @@ if __name__ == "__main__":
         "--output_dir", "-o", type=str, default="outputs", required=True, help="output directory"
     )
 
-    parser.add_argument("--box_threshold", type=float, default=0.25, help="box threshold")
-    parser.add_argument("--text_threshold", type=float, default=0.2, help="text threshold")
+    parser.add_argument("--box_threshold", type=float, default=0.1, help="box threshold")
+    parser.add_argument("--text_threshold", type=float, default=0.1, help="text threshold")
     parser.add_argument("--iou_threshold", type=float, default=0.5, help="iou threshold")
 
     parser.add_argument("--device", type=str, default="cpu", help="running on cpu only!, default=False")
@@ -209,7 +211,7 @@ if __name__ == "__main__":
     sam_checkpoint = args.sam_checkpoint
     sam_hq_checkpoint = args.sam_hq_checkpoint
     use_sam_hq = args.use_sam_hq
-    image_path = args.input_image
+    # image_path = args.input_image
     split = args.split
     openai_key = args.openai_key
     openai_proxy = args.openai_proxy
@@ -226,13 +228,9 @@ if __name__ == "__main__":
 
     # make dir
     os.makedirs(output_dir, exist_ok=True)
-    # load image
-    image_pil, image = load_image(image_path)
+
     # load model
     model = load_model(config_file, grounded_checkpoint, device=device)
-
-    # visualize raw image
-    image_pil.save(os.path.join(output_dir, "raw_image.jpg"))
 
     # initialize Recognize Anything Model
     normalize = TS.Normalize(mean=[0.485, 0.456, 0.406],
@@ -243,32 +241,13 @@ if __name__ == "__main__":
                 ])
     
     # load model
-    ram_model = ram(pretrained=ram_checkpoint,
+    ram_model = ram_plus(pretrained=ram_checkpoint,
                                         image_size=384,
                                         vit='swin_l')
     # threshold for tagging
     # we reduce the threshold to obtain more tags
     ram_model.eval()
-
     ram_model = ram_model.to(device)
-    raw_image = image_pil.resize(
-                    (384, 384))
-    raw_image  = transform(raw_image).unsqueeze(0).to(device)
-
-    res = inference_ram(raw_image , ram_model)
-
-    # Currently ", " is better for detecting single tags
-    # while ". " is a little worse in some case
-    tags=res[0].replace(' |', ',')
-    tags_chinese=res[1].replace(' |', ',')
-
-    print("Image Tags: ", res[0])
-    print("图像标签: ", res[1])
-
-    # run grounding dino model
-    boxes_filt, scores, pred_phrases = get_grounding_output(
-        model, image, tags, box_threshold, text_threshold, device=device
-    )
 
     # initialize SAM
     if use_sam_hq:
@@ -276,49 +255,77 @@ if __name__ == "__main__":
         predictor = SamPredictor(build_sam_hq(checkpoint=sam_hq_checkpoint).to(device))
     else:
         predictor = SamPredictor(build_sam(checkpoint=sam_checkpoint).to(device))
-    image = cv2.imread(image_path)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    predictor.set_image(image)
 
-    size = image_pil.size
-    H, W = size[1], size[0]
-    for i in range(boxes_filt.size(0)):
-        boxes_filt[i] = boxes_filt[i] * torch.Tensor([W, H, W, H])
-        boxes_filt[i][:2] -= boxes_filt[i][2:] / 2
-        boxes_filt[i][2:] += boxes_filt[i][:2]
+    # build loop
+    image_paths = glob.glob('image_dataset' + '/*.jpg')
 
-    boxes_filt = boxes_filt.cpu()
-    # use NMS to handle overlapped boxes
-    print(f"Before NMS: {boxes_filt.shape[0]} boxes")
-    nms_idx = torchvision.ops.nms(boxes_filt, scores, iou_threshold).numpy().tolist()
-    boxes_filt = boxes_filt[nms_idx]
-    pred_phrases = [pred_phrases[idx] for idx in nms_idx]
-    print(f"After NMS: {boxes_filt.shape[0]} boxes")
-    tags_chinese = check_tags_chinese(tags_chinese, pred_phrases)
-    print(f"Revise tags_chinese with number: {tags_chinese}")
+    for idx,image_path in enumerate(image_paths):
 
-    transformed_boxes = predictor.transform.apply_boxes_torch(boxes_filt, image.shape[:2]).to(device)
+        # load image
+        image_pil, image = load_image(image_path)
+        # visualize raw image
+        # image_pil.save(os.path.join(output_dir, "raw_image.jpg"))
+        raw_image = image_pil.resize((384, 384))
+        raw_image  = transform(raw_image).unsqueeze(0).to(device)
 
-    masks, _, _ = predictor.predict_torch(
-        point_coords = None,
-        point_labels = None,
-        boxes = transformed_boxes.to(device),
-        multimask_output = False,
-    )
-    
-    # draw output image
-    plt.figure(figsize=(10, 10))
-    plt.imshow(image)
-    for mask in masks:
-        show_mask(mask.cpu().numpy(), plt.gca(), random_color=True)
-    for box, label in zip(boxes_filt, pred_phrases):
-        show_box(box.numpy(), plt.gca(), label)
+        res = inference_ram(raw_image , ram_model)
 
-    # plt.title('RAM-tags' + tags + '\n' + 'RAM-tags_chineseing: ' + tags_chinese + '\n')
-    plt.axis('off')
-    plt.savefig(
-        os.path.join(output_dir, "automatic_label_output.jpg"), 
-        bbox_inches="tight", dpi=300, pad_inches=0.0
-    )
+        # Currently ", " is better for detecting single tags
+        # while ". " is a little worse in some case
+        tags=res[0].replace(' |', ',')
+        # tags_chinese=res[1].replace(' |', ',')
 
-    save_mask_data(output_dir, tags_chinese, masks, boxes_filt, pred_phrases)
+        # print("Image Tags: ", res[0])
+        # print("图像标签: ", res[1])
+
+        # run grounding dino model
+        boxes_filt, scores, pred_phrases = get_grounding_output(
+            model, image, tags, box_threshold, text_threshold, device=device
+        )
+
+        image = cv2.imread(image_path)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        predictor.set_image(image)
+
+        size = image_pil.size
+        H, W = size[1], size[0]
+        for i in range(boxes_filt.size(0)):
+            boxes_filt[i] = boxes_filt[i] * torch.Tensor([W, H, W, H])
+            boxes_filt[i][:2] -= boxes_filt[i][2:] / 2
+            boxes_filt[i][2:] += boxes_filt[i][:2]
+
+        boxes_filt = boxes_filt.cpu()
+        # use NMS to handle overlapped boxes
+        print(f"Before NMS: {boxes_filt.shape[0]} boxes")
+        nms_idx = torchvision.ops.nms(boxes_filt, scores, iou_threshold).numpy().tolist()
+        boxes_filt = boxes_filt[nms_idx]
+        pred_phrases = [pred_phrases[idx] for idx in nms_idx]
+        print(f"After NMS: {boxes_filt.shape[0]} boxes")
+        # tags_chinese = check_tags_chinese(tags_chinese, pred_phrases)
+        # print(f"Revise tags_chinese with number: {tags_chinese}")
+
+        transformed_boxes = predictor.transform.apply_boxes_torch(boxes_filt, image.shape[:2]).to(device)
+
+        masks, _, _ = predictor.predict_torch(
+            point_coords = None,
+            point_labels = None,
+            boxes = transformed_boxes.to(device),
+            multimask_output = False,
+        )
+        
+        # draw output image
+        plt.figure(figsize=(10, 10))
+        plt.imshow(image)
+        for mask in masks:
+            show_mask(mask.cpu().numpy(), plt.gca(), random_color=True)
+        for box, label in zip(boxes_filt, pred_phrases):
+            show_box(box.numpy(), plt.gca(), label)
+
+        plt.title('RAM-tags' + tags + '\n')# + 'RAM-tags_chineseing: ' + tags_chinese + '\n'
+        plt.axis('off')
+        plt.savefig(
+            os.path.join(output_dir, "label_%d.jpg"%(idx)), 
+            bbox_inches="tight", dpi=300, pad_inches=0.0
+        )
+
+        save_mask_data(output_dir, masks, boxes_filt, pred_phrases)#tags_chinese
