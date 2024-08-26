@@ -198,7 +198,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument("--box_threshold", type=float, default=0.1, help="box threshold")
-    parser.add_argument("--text_threshold", type=float, default=0.1, help="text threshold")
+    parser.add_argument("--text_threshold", type=float, default=0.2, help="text threshold")
     parser.add_argument("--iou_threshold", type=float, default=0.5, help="iou threshold")
 
     parser.add_argument("--device", type=str, default="cpu", help="running on cpu only!, default=False")

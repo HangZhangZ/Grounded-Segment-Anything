@@ -248,7 +248,6 @@ if __name__ == "__main__":
         plt.axis('off')
         plt.savefig(
             os.path.join(output_dir, "grounded_sam_%d.jpg"%(idx)),
-            bbox_inches="tight", dpi=300, pad_inches=0.0
-        )
+            bbox_inches="tight", dpi=300, pad_inches=0.0)
 
         save_mask_data(output_dir, masks, boxes_filt, pred_phrases)
