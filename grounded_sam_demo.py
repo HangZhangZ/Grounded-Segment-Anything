@@ -100,6 +100,39 @@ def show_mask(mask, ax, random_color=False):
     mask_image = mask.reshape(h, w, 1) * color.reshape(1, 1, -1)
     ax.imshow(mask_image)
 
+def parse_mask_region(output_dir, mask_list, id):
+    value = 0  # 0 for background
+    plt.figure(figsize=(10, 10))
+
+    for idx, mask in enumerate(mask_list):
+
+        # init entire canvas
+        mask_img = torch.zeros(mask_list.shape[-2:])
+        mask_img[mask.cpu().numpy()[0] == True] = value + idx + 1
+        plt.imshow(mask_img.numpy())
+        plt.axis('off')
+        plt.savefig(os.path.join(output_dir, 'mask_%d.jpg'%(id)), bbox_inches="tight", dpi=300, pad_inches=0.0)
+        plt.clf()
+
+        # init local canvas
+        mask_img = torch.zeros(mask_list.shape[-2:])
+        mask_img[mask.cpu().numpy()[0] == True] = value + idx + 1
+        plt.imshow(mask_img.numpy())
+        plt.axis('off')
+        plt.savefig(os.path.join(output_dir, 'mask_%d.jpg'%(id)), bbox_inches="tight", dpi=300, pad_inches=0.0)
+        plt.clf()
+
+
+    json_data = {
+        # 'tags_chinese': tags_chinese,
+        'mask':[{
+            'value': value,
+            'label': 'background'
+        }]
+    }
+    with open(os.path.join(output_dir, 'label.json'), 'w') as f:
+        json.dump(json_data, f)
+
 
 def show_box(box, ax, label):
     x0, y0 = box[0], box[1]
