@@ -7,6 +7,7 @@ import json
 import torch
 from PIL import Image
 import glob
+import cv2
 
 sys.path.append(os.path.join(os.getcwd(), "GroundingDINO"))
 sys.path.append(os.path.join(os.getcwd(), "segment_anything"))
@@ -100,19 +101,17 @@ def show_mask(mask, ax, random_color=False):
     mask_image = mask.reshape(h, w, 1) * color.reshape(1, 1, -1)
     ax.imshow(mask_image)
 
-def parse_mask_region(output_dir, mask_list, id):
+def parse_mask_region(img, output_dir, mask_list, id):
     value = 0  # 0 for background
     plt.figure(figsize=(10, 10))
 
     for idx, mask in enumerate(mask_list):
 
-        # init entire canvas
+        # init general canvas
         mask_img = torch.zeros(mask_list.shape[-2:])
         mask_img[mask.cpu().numpy()[0] == True] = value + idx + 1
-        plt.imshow(mask_img.numpy())
-        plt.axis('off')
-        plt.savefig(os.path.join(output_dir, 'mask_%d.jpg'%(id)), bbox_inches="tight", dpi=300, pad_inches=0.0)
-        plt.clf()
+        # save mask region
+        cv2.imwrite(os.path.join(output_dir, 'general_mask_%d.jpg'%(id)), mask_img.numpy())
 
         # init local canvas
         mask_img = torch.zeros(mask_list.shape[-2:])
