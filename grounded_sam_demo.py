@@ -12,7 +12,6 @@ import cv2
 sys.path.append(os.path.join(os.getcwd(), "GroundingDINO"))
 sys.path.append(os.path.join(os.getcwd(), "segment_anything"))
 
-
 # Grounding DINO
 import GroundingDINO.groundingdino.datasets.transforms as T
 from GroundingDINO.groundingdino.models import build_model
@@ -111,14 +110,16 @@ def parse_mask_region(img, output_dir, mask_list, id):
         mask_img = torch.zeros(mask_list.shape[-2:])
         mask_img[mask.cpu().numpy()[0] == True] = value + idx + 1
         # save mask region
-        cv2.imwrite(os.path.join(output_dir, 'general_mask_%d.jpg'%(id)), mask_img.numpy())
+        cv2.imwrite(os.path.join(output_dir, 'general_mask','%d.jpg'%(id)), mask_img.numpy())
+        # save mask img
+        cv2.imwrite(os.path.join(output_dir, 'general_mask','%d.jpg'%(id)), mask_img.numpy())
 
         # init local canvas
         mask_img = torch.zeros(mask_list.shape[-2:])
         mask_img[mask.cpu().numpy()[0] == True] = value + idx + 1
         plt.imshow(mask_img.numpy())
         plt.axis('off')
-        plt.savefig(os.path.join(output_dir, 'mask_%d.jpg'%(id)), bbox_inches="tight", dpi=300, pad_inches=0.0)
+        plt.savefig(os.path.join(output_dir, 'localmask_%d.jpg'%(id)), bbox_inches="tight", dpi=300, pad_inches=0.0)
         plt.clf()
 
 
@@ -154,7 +155,7 @@ def save_mask_data(output_dir, mask_list, box_list, label_list):
     json_data = [{
         'value': value,
         'label': 'background'
-    }]
+        }]
     for label, box in zip(label_list, box_list):
         value += 1
         name, logit = label.split('(')
@@ -238,9 +239,15 @@ if __name__ == "__main__":
     # build loop
     image_paths = glob.glob('image_dataset' + '/*.jpg')
 
+    # make folders
+    os.makedirs('%s/general_mask'%(output_dir),exist_ok=True)
+    os.makedirs('%s/local_mask'%(output_dir),exist_ok=True)
+    os.makedirs('%s/general_img'%(output_dir),exist_ok=True)
+    os.makedirs('%s/local_img'%(output_dir),exist_ok=True)
+
     for idx,image_path in enumerate(image_paths):
 
-        # load image
+        # load image 
         image_pil, image = load_image(image_path)
 
         # run grounding dino model
