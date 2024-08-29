@@ -128,7 +128,7 @@ def parse_mask_region(img, output_dir, mask_list, id):
         cv2.imwrite(os.path.join(output_dir, 'general_img','%d/%d.jpg'%(id,idx)), img_filtered)
 
         # init local canvas
-        min_x, max_x, min_y, max_y = find_bound_box(mask)
+        min_x, max_x, min_y, max_y = find_bound_box(mask.cpu().numpy()[0])
         mask_img_cropped = mask_img[min_x:max_x,min_y:max_y]
         img_filtered_cropped = img_filtered[min_x:max_x,min_y:max_y]
         # save mask region
@@ -136,15 +136,15 @@ def parse_mask_region(img, output_dir, mask_list, id):
         # save mask img
         cv2.imwrite(os.path.join(output_dir, 'local_img','%d/%d.jpg'%(id,idx)), img_filtered_cropped)
 
-    json_data = {
-        # 'tags_chinese': tags_chinese,
-        'mask':[{
-            'value': value,
-            'label': 'background'
-        }]
-    }
-    with open(os.path.join(output_dir, 'label.json'), 'w') as f:
-        json.dump(json_data, f)
+    # json_data = {
+    #     # 'tags_chinese': tags_chinese,
+    #     'mask':[{
+    #         'value': value,
+    #         'label': 'background'
+    #     }]
+    # }
+    # with open(os.path.join(output_dir, 'label.json'), 'w') as f:
+    #     json.dump(json_data, f)
 
 
 def show_box(box, ax, label):
