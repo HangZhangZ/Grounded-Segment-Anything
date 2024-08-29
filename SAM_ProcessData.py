@@ -228,17 +228,15 @@ if __name__ == "__main__":
     text_threshold = args.text_threshold
     device = args.device
 
-    # get large tag catagory
-    text_prompt = ''
-    with open('ram_tag_list.txt','r') as f:
-        for line in f:
-            text_prompt += line.strip('\n').split('.')[0]
-            text_prompt += '. '
+    # # get large tag catagory
+    # text_prompt = ''
+    # with open('ram_tag_list.txt','r') as f:
+    #     for line in f:
+    #         text_prompt += line.strip('\n').split('.')[0]
+    #         text_prompt += '. '
 
-    # make dir
-    os.makedirs(output_dir, exist_ok=True)
-    # load model
-    model = load_model(config_file, grounded_checkpoint, device=device)
+    # # load model
+    # model = load_model(config_file, grounded_checkpoint, device=device)
 
     # initialize SAM
     if use_sam_hq:
@@ -261,32 +259,33 @@ if __name__ == "__main__":
 
     for idx,image_path in enumerate(image_paths):
 
-        # load image 
-        image_pil, image = load_image(image_path)
+        # # load image 
+        # image_pil, image = load_image(image_path)
 
-        # run grounding dino model
-        boxes_filt, pred_phrases = get_grounding_output(
-        model, image, text_prompt, box_threshold, text_threshold, device=device)
+        # # run grounding dino model
+        # boxes_filt, pred_phrases = get_grounding_output(
+        # model, image, text_prompt, box_threshold, text_threshold, device=device)
 
         image = cv2.imread(image_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         predictor.set_image(image)
 
-        size = image_pil.size
-        H, W = size[1], size[0]
-        for i in range(boxes_filt.size(0)):
-            boxes_filt[i] = boxes_filt[i] * torch.Tensor([W, H, W, H])
-            boxes_filt[i][:2] -= boxes_filt[i][2:] / 2
-            boxes_filt[i][2:] += boxes_filt[i][:2]
+        # size = image_pil.size
+        # H, W = size[1], size[0]
+        # for i in range(boxes_filt.size(0)):
+        #     boxes_filt[i] = boxes_filt[i] * torch.Tensor([W, H, W, H])
+        #     boxes_filt[i][:2] -= boxes_filt[i][2:] / 2
+        #     boxes_filt[i][2:] += boxes_filt[i][:2]
 
-        boxes_filt = boxes_filt.cpu()
-        transformed_boxes = predictor.transform.apply_boxes_torch(boxes_filt, image.shape[:2]).to(device)
+        # boxes_filt = boxes_filt.cpu()
+        # transformed_boxes = predictor.transform.apply_boxes_torch(boxes_filt, image.shape[:2]).to(device)
 
         masks, _, _ = predictor.predict_torch(
             point_coords = None,
             point_labels = None,
-            boxes = transformed_boxes.to(device),
-            multimask_output = False,)
+            boxes = None,#transformed_boxes.to(device),
+            multimask_output = False,
+            )
 
         parse_mask_region(image, output_dir, masks, idx)
 
