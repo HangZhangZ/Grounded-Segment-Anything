@@ -100,28 +100,41 @@ def show_mask(mask, ax, random_color=False):
     mask_image = mask.reshape(h, w, 1) * color.reshape(1, 1, -1)
     ax.imshow(mask_image)
 
+def find_bound_box(mask):
+
+    region_x, region_y = np.where(mask==True)
+    min_x = region_x[np.argmin(region_x)]
+    max_x = region_x[np.argmax(region_x)]
+    min_y = region_y[np.argmin(region_y)]
+    max_y = region_y[np.argmax(region_y)]
+
+    return min_x, max_x, min_y, max_y
+
+
 def parse_mask_region(img, output_dir, mask_list, id):
-    value = 0  # 0 for background
-    plt.figure(figsize=(10, 10))
+    # value = 0  # 0 for background
+    # plt.figure(figsize=(10, 10))
 
     for idx, mask in enumerate(mask_list):
 
         # init general canvas
         mask_img = torch.zeros(mask_list.shape[-2:])
-        mask_img[mask.cpu().numpy()[0] == True] = value + idx + 1
+        mask_img[mask.cpu().numpy()[0] == True] = 1
+        img_filtered = img.copy()
+        img_filtered[mask.cpu().numpy()[0] == False] = 0
         # save mask region
-        cv2.imwrite(os.path.join(output_dir, 'general_mask','%d.jpg'%(id)), mask_img.numpy())
+        cv2.imwrite(os.path.join(output_dir, 'general_mask','%d/%d.jpg'%(id,idx)), mask_img.numpy())
         # save mask img
-        cv2.imwrite(os.path.join(output_dir, 'general_mask','%d.jpg'%(id)), mask_img.numpy())
+        cv2.imwrite(os.path.join(output_dir, 'general_img','%d/%d.jpg'%(id,idx)), img_filtered)
 
         # init local canvas
-        mask_img = torch.zeros(mask_list.shape[-2:])
-        mask_img[mask.cpu().numpy()[0] == True] = value + idx + 1
-        plt.imshow(mask_img.numpy())
-        plt.axis('off')
-        plt.savefig(os.path.join(output_dir, 'localmask_%d.jpg'%(id)), bbox_inches="tight", dpi=300, pad_inches=0.0)
-        plt.clf()
-
+        min_x, max_x, min_y, max_y = find_bound_box(mask)
+        mask_img_cropped = mask_img[min_x:max_x,min_y:max_y]
+        img_filtered_cropped = img_filtered[min_x:max_x,min_y:max_y]
+        # save mask region
+        cv2.imwrite(os.path.join(output_dir, 'local_mask','%d/%d.jpg'%(id,idx)), mask_img_cropped.numpy())
+        # save mask img
+        cv2.imwrite(os.path.join(output_dir, 'local_img','%d/%d.jpg'%(id,idx)), img_filtered_cropped)
 
     json_data = {
         # 'tags_chinese': tags_chinese,
@@ -240,10 +253,11 @@ if __name__ == "__main__":
     image_paths = glob.glob('image_dataset' + '/*.jpg')
 
     # make folders
-    os.makedirs('%s/general_mask'%(output_dir),exist_ok=True)
-    os.makedirs('%s/local_mask'%(output_dir),exist_ok=True)
-    os.makedirs('%s/general_img'%(output_dir),exist_ok=True)
-    os.makedirs('%s/local_img'%(output_dir),exist_ok=True)
+    for f in range(30):
+        os.makedirs('%s/general_mask/%d'%(output_dir,f),exist_ok=True)
+        os.makedirs('%s/local_mask/%d'%(output_dir,f),exist_ok=True)
+        os.makedirs('%s/general_img/%d'%(output_dir,f),exist_ok=True)
+        os.makedirs('%s/local_img/%d'%(output_dir,f),exist_ok=True)
 
     for idx,image_path in enumerate(image_paths):
 
@@ -252,8 +266,7 @@ if __name__ == "__main__":
 
         # run grounding dino model
         boxes_filt, pred_phrases = get_grounding_output(
-        model, image, text_prompt, box_threshold, text_threshold, device=device
-        )
+        model, image, text_prompt, box_threshold, text_threshold, device=device)
 
         image = cv2.imread(image_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -273,20 +286,21 @@ if __name__ == "__main__":
             point_coords = None,
             point_labels = None,
             boxes = transformed_boxes.to(device),
-            multimask_output = False,
-        )
+            multimask_output = False,)
+
+        parse_mask_region(image, output_dir, masks, idx)
 
         # draw output image
-        plt.figure(figsize=(10, 10))
-        plt.imshow(image)
-        for mask in masks:
-            show_mask(mask.cpu().numpy(), plt.gca(), random_color=True)
-        for box, label in zip(boxes_filt, pred_phrases):
-            show_box(box.numpy(), plt.gca(), label)
+        # plt.figure(figsize=(10, 10))
+        # plt.imshow(image)
+        # for mask in masks:
+        #     show_mask(mask.cpu().numpy(), plt.gca(), random_color=True)
+        # for box, label in zip(boxes_filt, pred_phrases):
+        #     show_box(box.numpy(), plt.gca(), label)
 
-        plt.axis('off')
-        plt.savefig(
-            os.path.join(output_dir, "grounded_sam_%d.jpg"%(idx)),
-            bbox_inches="tight", dpi=300, pad_inches=0.0)
+        # plt.axis('off')
+        # plt.savefig(
+        #     os.path.join(output_dir, "grounded_sam_%d.jpg"%(idx)),
+        #     bbox_inches="tight", dpi=300, pad_inches=0.0)
 
-        save_mask_data(output_dir, masks, boxes_filt, pred_phrases)
+        # save_mask_data(output_dir, masks, boxes_filt, pred_phrases)
