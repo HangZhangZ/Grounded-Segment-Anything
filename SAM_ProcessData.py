@@ -102,7 +102,7 @@ def show_mask(mask, ax, random_color=False):
 
 def find_bound_box(mask):
 
-    region_x, region_y = np.where(mask==True)
+    region_x, region_y = np.where(mask==True)[0], np.where(mask==True)[1]
     min_x = region_x[np.argmin(region_x)]
     max_x = region_x[np.argmax(region_x)]
     min_y = region_y[np.argmin(region_y)]
@@ -291,7 +291,6 @@ if __name__ == "__main__":
             boxes = None, #transformed_boxes.to(device),
             multimask_output = False,
             )
-        print(masks)
 
         parse_mask_region(image, output_dir, masks, idx)
 
