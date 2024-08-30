@@ -291,6 +291,7 @@ if __name__ == "__main__":
             boxes = None, #transformed_boxes.to(device),
             multimask_output = False,
             )
+        print(masks)
 
         parse_mask_region(image, output_dir, masks, idx)
 
