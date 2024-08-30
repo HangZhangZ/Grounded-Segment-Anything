@@ -28,7 +28,7 @@ import matplotlib.pyplot as plt
 # Recognize Anything Model & Tag2Text
 # from ram.models import ram
 from ram import inference_ram
-from ram.models import ram_plus
+from ram.models import ram#ram_plus
 import torchvision.transforms as TS
 
 # ChatGPT or nltk is required when using tags_chineses
@@ -293,7 +293,10 @@ if __name__ == "__main__":
                 ])
     
     # load model
-    ram_model = ram_plus(pretrained=ram_checkpoint,
+    # ram_model = ram_plus(pretrained=ram_checkpoint,
+    #                                     image_size=384,
+    #                                     vit='swin_l')
+    ram_model = ram(pretrained=ram_checkpoint,
                                         image_size=384,
                                         vit='swin_l')
     # threshold for tagging
@@ -390,3 +393,5 @@ if __name__ == "__main__":
         # )
 
         # save_mask_data(output_dir, masks, boxes_filt, pred_phrases, idx)#tags_chinese
+
+# python RAM_SAM_DataProcess.py --config GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py --ram_checkpoint ram_swin_large_14m.pth --grounded_checkpoint groundingdino_swint_ogc.pth --sam_checkpoint sam_vit_h_4b8939.pth --output_dir "outputs" --device "cuda"
