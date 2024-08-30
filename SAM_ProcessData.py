@@ -115,11 +115,14 @@ def parse_mask_region(img, output_dir, mask_list, id):
     # value = 0  # 0 for background
     # plt.figure(figsize=(10, 10))
 
+    mask_img_all = torch.zeros(mask_list.shape[-2:])
+
     for idx, mask in enumerate(mask_list):
 
         # init general canvas
         mask_img = torch.zeros(mask_list.shape[-2:])
         mask_img[mask.cpu().numpy()[0] == True] = 1
+        mask_img_all[mask.cpu().numpy()[0] == True] = idx + 1
         img_filtered = img.copy()
         img_filtered[mask.cpu().numpy()[0] == False] = 0
         # save mask region
@@ -135,6 +138,8 @@ def parse_mask_region(img, output_dir, mask_list, id):
         cv2.imwrite(os.path.join(output_dir, 'local_mask','%d/%d.jpg'%(idx,id)), mask_img_cropped.numpy())
         # save mask img
         cv2.imwrite(os.path.join(output_dir, 'local_img','%d/%d.jpg'%(idx,id)), img_filtered_cropped)
+
+    cv2.imwrite(os.path.join(output_dir,'%d.jpg'%(id)), mask_img_all.numpy())
 
     # json_data = {
     #     # 'tags_chinese': tags_chinese,
@@ -222,7 +227,7 @@ if __name__ == "__main__":
     sam_hq_checkpoint = args.sam_hq_checkpoint
     use_sam_hq = args.use_sam_hq
     image_path = args.input_image
-    # text_prompt = args.text_prompt
+    # text_prompt = args.text_prompt 
     output_dir = args.output_dir
     box_threshold = args.box_threshold
     text_threshold = args.text_threshold
@@ -283,7 +288,7 @@ if __name__ == "__main__":
         masks, _, _ = predictor.predict_torch(
             point_coords = None,
             point_labels = None,
-            boxes = None,#transformed_boxes.to(device),
+            boxes = None, #transformed_boxes.to(device),
             multimask_output = False,
             )
 
