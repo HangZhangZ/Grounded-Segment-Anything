@@ -35,6 +35,13 @@ import torchvision.transforms as TS
 # import openai
 # import nltk
 
+# create segment color list
+seg_colors = np.zeros((30,3))
+for c in range(30):
+    seg_colors[c,0] = c % 3
+    seg_colors[c,1] = (c // 3) % 3
+    seg_colors[c,2] = (c // 9) % 3
+
 def load_image(image_path):
     # load image
     image_pil = Image.open(image_path).convert("RGB")  # load image
@@ -170,6 +177,7 @@ def save_mask_data(output_dir, mask_list, box_list, label_list, id):#tags_chines
     with open(os.path.join(output_dir, 'label.json'), 'w') as f:
         json.dump(json_data, f)
     
+
 def find_bound_box(mask):
 
     region_x, region_y = np.where(mask==True)[0], np.where(mask==True)[1]
@@ -181,18 +189,19 @@ def find_bound_box(mask):
 
     return min_x, max_x, min_y, max_y
 
+
 def parse_mask_region(img, output_dir, mask_list, id):
     # value = 0  # 0 for background
     # plt.figure(figsize=(10, 10))
 
-    mask_img_all = torch.zeros(mask_list.shape[-2:])
+    mask_img_all = img.copy()
 
     for idx, mask in enumerate(mask_list):
 
         # init general canvas
         mask_img = torch.zeros(mask_list.shape[-2:])
-        mask_img[mask.cpu().numpy()[0] == True] = 1
-        mask_img_all[mask.cpu().numpy()[0] == True] = idx + 1
+        mask_img[mask.cpu().numpy()[0] == True] = 255
+        mask_img_all[mask.cpu().numpy()[0] == True,:3] = seg_colors[idx]
         img_filtered = img.copy()
         img_filtered[mask.cpu().numpy()[0] == False] = 0
         # save mask region
@@ -209,6 +218,7 @@ def parse_mask_region(img, output_dir, mask_list, id):
         # save mask img
         cv2.imwrite(os.path.join(output_dir, 'local_img','%d/%d.jpg'%(idx,id)), img_filtered_cropped)
 
+    # save entire mask region
     cv2.imwrite(os.path.join(output_dir,'%d.jpg'%(id)), mask_img_all.numpy())
 
 
@@ -371,6 +381,8 @@ if __name__ == "__main__":
             boxes = transformed_boxes.to(device),
             multimask_output = False,
         )
+
+
 
         parse_mask_region(image, output_dir, masks, idx)
         
