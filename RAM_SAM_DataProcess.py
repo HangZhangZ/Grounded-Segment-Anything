@@ -192,7 +192,6 @@ def parse_mask_region(img, output_dir, mask_list, id):
     # plt.figure(figsize=(10, 10))
 
     mask_img_all = img.copy()
-    print(img.shape())
 
     for idx, mask in enumerate(mask_list):
 
@@ -374,6 +373,7 @@ if __name__ == "__main__":
         # print(f"Revise tags_chinese with number: {tags_chinese}")
 
         transformed_boxes = predictor.transform.apply_boxes_torch(boxes_filt, image.shape[:2]).to(device)
+        print(image.shape())
 
         masks, _, _ = predictor.predict_torch(
             point_coords = None,
