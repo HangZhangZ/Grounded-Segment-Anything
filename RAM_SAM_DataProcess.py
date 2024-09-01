@@ -192,6 +192,7 @@ def parse_mask_region(img, output_dir, mask_list, id):
     # plt.figure(figsize=(10, 10))
 
     mask_img_all = img.copy()
+    print(img.shape())
 
     for idx, mask in enumerate(mask_list):
 
