@@ -37,10 +37,10 @@ import torchvision.transforms as TS
 
 # create segment color list
 seg_colors = np.zeros((30,3))
-for c in range(30):
-    seg_colors[c,0] = c % 3
-    seg_colors[c,1] = (c // 3) % 3
-    seg_colors[c,2] = (c // 9) % 3
+for c in range(1,31):
+    seg_colors[c,0] = 255 - (c % 3)*85
+    seg_colors[c,1] = 255 - ((c // 3) % 3)*85
+    seg_colors[c,2] = 255 - ((c // 9) % 3)*85
 
 def load_image(image_path):
     # load image
