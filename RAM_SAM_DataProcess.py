@@ -180,7 +180,6 @@ def save_mask_data(output_dir, mask_list, box_list, label_list, id):#tags_chines
 def find_bound_box(mask):
 
     region_x, region_y = np.where(mask==True)[0], np.where(mask==True)[1]
-    print(region_x)
     min_x = region_x[np.argmin(region_x)]
     max_x = region_x[np.argmax(region_x)]
     min_y = region_y[np.argmin(region_y)]
@@ -216,7 +215,7 @@ def parse_mask_region(img, output_dir, mask_list, id):
         # save mask img
         cv2.imwrite(os.path.join(output_dir, 'local_img','%d/%d.jpg'%(idx,id)), img_filtered_cropped)
 
-    cv2.imwrite(os.path.join(output_dir,'%d.jpg'%(id)), mask_img_all.numpy())
+    cv2.imwrite(os.path.join(output_dir,'%d.jpg'%(id)), mask_img_all)
 
 
     # json_data = {
