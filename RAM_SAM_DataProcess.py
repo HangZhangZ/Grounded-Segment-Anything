@@ -37,7 +37,7 @@ import torchvision.transforms as TS
 
 # create segment color list
 seg_colors = np.zeros((30,3))
-for c in range(1,31):
+for c in range(30):
     seg_colors[c,0] = 255 - (c % 3)*85
     seg_colors[c,1] = 255 - ((c // 3) % 3)*85
     seg_colors[c,2] = 255 - ((c // 9) % 3)*85
