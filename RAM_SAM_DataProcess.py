@@ -35,6 +35,13 @@ import torchvision.transforms as TS
 # import openai
 # import nltk
 
+# create segment color list
+seg_colors = np.zeros((30,3))
+for c in range(30):
+    seg_colors[c,0] = c % 3
+    seg_colors[c,1] = (c // 3) % 3
+    seg_colors[c,2] = (c // 9) % 3
+
 def load_image(image_path):
     # load image
     image_pil = Image.open(image_path).convert("RGB")  # load image
@@ -185,14 +192,14 @@ def parse_mask_region(img, output_dir, mask_list, id):
     # value = 0  # 0 for background
     # plt.figure(figsize=(10, 10))
 
-    mask_img_all = torch.zeros(mask_list.shape[-2:])
+    mask_img_all = img.copy()
 
     for idx, mask in enumerate(mask_list):
 
         # init general canvas
         mask_img = torch.zeros(mask_list.shape[-2:])
-        mask_img[mask.cpu().numpy()[0] == True] = 1
-        mask_img_all[mask.cpu().numpy()[0] == True] = idx + 1
+        mask_img[mask.cpu().numpy()[0] == True] = 255
+        mask_img_all[mask.cpu().numpy()[0] == True,:3] = seg_colors[idx]
         img_filtered = img.copy()
         img_filtered[mask.cpu().numpy()[0] == False] = 0
         # save mask region
