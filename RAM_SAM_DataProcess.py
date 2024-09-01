@@ -373,7 +373,7 @@ if __name__ == "__main__":
         # print(f"Revise tags_chinese with number: {tags_chinese}")
 
         transformed_boxes = predictor.transform.apply_boxes_torch(boxes_filt, image.shape[:2]).to(device)
-        print(image.shape())
+        print(image.shape)
 
         masks, _, _ = predictor.predict_torch(
             point_coords = None,
