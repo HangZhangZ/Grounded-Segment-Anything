@@ -202,7 +202,7 @@ def parse_mask_region(img, output_dir, mask_list, id):
         img_filtered = img.copy()
         img_filtered[mask.cpu().numpy()[0] == False,:] = 0
         # save mask region
-        cv2.imwrite(os.path.join(output_dir, 'general_mask','%d/%d.jpg'%(idx,id)), mask_img.numpy())
+        cv2.imwrite(os.path.join(output_dir, 'general_mask','%d/%d.jpg'%(idx,id)), mask_img.numpy(),)
         # save mask img
         cv2.imwrite(os.path.join(output_dir, 'general_img','%d/%d.jpg'%(idx,id)), img_filtered)
 
@@ -326,6 +326,7 @@ if __name__ == "__main__":
         os.makedirs('%s/local_mask/%d'%(output_dir,f),exist_ok=True)
         os.makedirs('%s/general_img/%d'%(output_dir,f),exist_ok=True)
         os.makedirs('%s/local_img/%d'%(output_dir,f),exist_ok=True)
+    os.makedirs('%s/local_img/ram'%(output_dir),exist_ok=True)
 
     for idx,image_path in enumerate(image_paths):
 
@@ -383,20 +384,20 @@ if __name__ == "__main__":
 
         parse_mask_region(image, output_dir, masks, idx)
         
-        # # draw output image
-        # plt.figure(figsize=(10, 10))
-        # plt.imshow(image)
-        # for mask in masks:
-        #     show_mask(mask.cpu().numpy(), plt.gca(), random_color=True)
-        # for box, label in zip(boxes_filt, pred_phrases):
-        #     show_box(box.numpy(), plt.gca(), label)
+        # draw output image
+        plt.figure(figsize=(10, 10))
+        plt.imshow(image)
+        for mask in masks:
+            show_mask(mask.cpu().numpy(), plt.gca(), random_color=True)
+        for box, label in zip(boxes_filt, pred_phrases):
+            show_box(box.numpy(), plt.gca(), label)
 
-        # plt.title('RAM-tags' + tags + '\n')# + 'RAM-tags_chineseing: ' + tags_chinese + '\n'
-        # plt.axis('off')
-        # plt.savefig(
-        #     os.path.join(output_dir, "label_%d.jpg"%(idx)), 
-        #     bbox_inches="tight", dpi=300, pad_inches=0.0
-        # )
+        plt.title('RAM-tags' + tags + '\n')# + 'RAM-tags_chineseing: ' + tags_chinese + '\n'
+        plt.axis('off')
+        plt.savefig(
+            os.path.join(output_dir, "label_%d.jpg"%(idx)), 
+            bbox_inches="tight", dpi=300, pad_inches=0.0
+        )
 
         # save_mask_data(output_dir, masks, boxes_filt, pred_phrases, idx)#tags_chinese
 
