@@ -95,7 +95,7 @@ def parse_mask_region(img, output_dir, masks_all, id):
         mask_np = np.array(mask['segmentation'])
 
         # init general canvas
-        mask_img = np.zeros_like(mask_np)
+        mask_img = np.zeros(mask_np.shape)
         print(mask_img)
         mask_img[mask_np == True] = 255
         mask_img_all[mask_np == True] = seg_colors[idx]
