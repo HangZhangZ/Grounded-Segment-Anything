@@ -19,7 +19,9 @@ from GroundingDINO.groundingdino.util.utils import clean_state_dict, get_phrases
 from segment_anything import (
     build_sam,
     build_sam_hq,
-    SamPredictor
+    SamPredictor,
+    SamAutomaticMaskGenerator,
+    sam_model_registry
 ) 
 import cv2
 import numpy as np
@@ -317,7 +319,8 @@ if __name__ == "__main__":
         print("Initialize SAM-HQ Predictor")
         predictor = SamPredictor(build_sam_hq(checkpoint=sam_hq_checkpoint).to(device))
     else:
-        predictor = SamPredictor(build_sam(checkpoint=sam_checkpoint).to(device))
+        # predictor = SamPredictor(build_sam(checkpoint=sam_checkpoint).to(device))
+        predictor = SamAutomaticMaskGenerator(build_sam(checkpoint=sam_checkpoint).to(device))
 
     # build loop
     image_paths = glob.glob('image_dataset' + '/*.jpg')
@@ -380,7 +383,7 @@ if __name__ == "__main__":
         masks, _, _ = predictor.predict_torch(
             point_coords = None,
             point_labels = None,
-            boxes = transformed_boxes.to(device),
+            boxes = None,#transformed_boxes.to(device),
             multimask_output = False,
         )
 
