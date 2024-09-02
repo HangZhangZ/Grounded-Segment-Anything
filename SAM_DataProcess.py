@@ -92,12 +92,14 @@ def parse_mask_region(img, output_dir, masks_all, id):
 
     for idx, mask in enumerate(masks_all):
 
+        mask_np = np.array(mask['segmentation'])
+
         # init general canvas
-        mask_img = np.zeros_like(mask['segmentation'])
-        mask_img[mask['segmentation'] == True] = 255
-        mask_img_all[mask['segmentation'] == True] = seg_colors[idx]
+        mask_img = np.zeros_like(mask_np)
+        mask_img[mask_np == True] = 255
+        mask_img_all[mask_np == True] = seg_colors[idx]
         img_filtered = img.copy()
-        img_filtered[mask['segmentation'] == False, :] = 0
+        img_filtered[mask_np == False, :] = 0
         # save mask region
         cv2.imwrite(os.path.join(output_dir, 'general_mask','%d/%d.jpg'%(idx,id)), mask_img)
         # save mask img
@@ -182,4 +184,4 @@ if __name__ == "__main__":
         parse_mask_region(image, output_dir, masks_all, idx)
 
 
-# python SAM_DataProcess.py --sam_checkpoint sam_vit_h_4b8939.pth --output_dir "outputs" --device "cuda"
+# python SAM_DataProcess.py --config GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py --sam_checkpoint sam_vit_h_4b8939.pth --output_dir "outputs" --device "cuda"
