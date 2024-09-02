@@ -326,7 +326,7 @@ if __name__ == "__main__":
         os.makedirs('%s/local_mask/%d'%(output_dir,f),exist_ok=True)
         os.makedirs('%s/general_img/%d'%(output_dir,f),exist_ok=True)
         os.makedirs('%s/local_img/%d'%(output_dir,f),exist_ok=True)
-    os.makedirs('%s/local_img/ram'%(output_dir),exist_ok=True)
+    os.makedirs('%s/ram'%(output_dir),exist_ok=True)
 
     for idx,image_path in enumerate(image_paths):
 
