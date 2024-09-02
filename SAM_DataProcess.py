@@ -106,9 +106,8 @@ def parse_mask_region(img, output_dir, masks_all, id):
         cv2.imwrite(os.path.join(output_dir, 'general_img','%d/%d.jpg'%(idx,id)), img_filtered)
 
         # init local canvas
-        # min_x, max_x, min_y, max_y = find_bound_box(mask.cpu().numpy()[0])
-        min_x, min_y, max_x, max_y = mask['bbox']
-        print(min_x)
+        min_x, max_x, min_y, max_y = find_bound_box(mask_np)
+        # min_x, min_y, max_x, max_y = mask['bbox']
         mask_img_cropped = mask_img[min_x:max_x,min_y:max_y]
         img_filtered_cropped = img_filtered[min_x:max_x,min_y:max_y]
         # save mask region
