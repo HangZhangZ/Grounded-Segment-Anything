@@ -177,6 +177,7 @@ def save_mask_data(output_dir, mask_list, box_list, label_list, id):#tags_chines
     with open(os.path.join(output_dir, 'label.json'), 'w') as f:
         json.dump(json_data, f)
     
+
 def find_bound_box(mask):
 
     region_x, region_y = np.where(mask==True)[0], np.where(mask==True)[1]
@@ -186,6 +187,7 @@ def find_bound_box(mask):
     max_y = region_y[np.argmax(region_y)]
 
     return min_x, max_x, min_y, max_y
+
 
 def parse_mask_region(img, output_dir, mask_list, id):
     # value = 0  # 0 for background
@@ -200,7 +202,7 @@ def parse_mask_region(img, output_dir, mask_list, id):
         mask_img[mask.cpu().numpy()[0] == True] = 255
         mask_img_all[mask.cpu().numpy()[0] == True] = seg_colors[idx]
         img_filtered = img.copy()
-        img_filtered[mask.cpu().numpy()[0] == False,:2] = 0
+        img_filtered[mask.cpu().numpy()[0] == False,:] = 0
         # save mask region
         cv2.imwrite(os.path.join(output_dir, 'general_mask','%d/%d.jpg'%(idx,id)), mask_img.numpy())
         # save mask img
@@ -353,7 +355,7 @@ if __name__ == "__main__":
         )
 
         image = cv2.imread(image_path)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         predictor.set_image(image)
 
         size = image_pil.size
