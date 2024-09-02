@@ -19,8 +19,8 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-seg_colors = np.zeros((50,3))
-for c in range(50):
+seg_colors = np.zeros((32,3))
+for c in range(32):
     seg_colors[c,0] = 255 - ((c+1) % 3)*85
     seg_colors[c,1] = 255 - (((c+1) // 3) % 3)*85
     seg_colors[c,2] = 255 - (((c+1) // 9) % 3)*85
@@ -167,7 +167,7 @@ if __name__ == "__main__":
     image_paths = glob.glob('image_dataset' + '/*.jpg')
 
     # make folders
-    for f in range(30):
+    for f in range(32):
         os.makedirs('%s/general_mask/%d'%(output_dir,f),exist_ok=True)
         os.makedirs('%s/local_mask/%d'%(output_dir,f),exist_ok=True)
         os.makedirs('%s/general_img/%d'%(output_dir,f),exist_ok=True)
