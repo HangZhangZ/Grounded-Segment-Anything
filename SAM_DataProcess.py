@@ -19,8 +19,8 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-seg_colors = np.zeros((30,3))
-for c in range(30):
+seg_colors = np.zeros((50,3))
+for c in range(50):
     seg_colors[c,0] = 255 - ((c+1) % 3)*85
     seg_colors[c,1] = 255 - (((c+1) // 3) % 3)*85
     seg_colors[c,2] = 255 - (((c+1) // 9) % 3)*85
