@@ -39,8 +39,8 @@ import torchvision.transforms as TS
 seg_colors = np.zeros((30,3))
 for c in range(30):
     seg_colors[c,0] = 255 - ((c+1) % 3)*85
-    seg_colors[c,1] = 255 - ((c // 3) % 3)*85
-    seg_colors[c,2] = 255 - ((c // 9) % 3)*85
+    seg_colors[c,1] = 255 - (((c+1) // 3) % 3)*85
+    seg_colors[c,2] = 255 - (((c+1) // 9) % 3)*85
 
 def load_image(image_path):
     # load image
@@ -200,9 +200,9 @@ def parse_mask_region(img, output_dir, mask_list, id):
         mask_img[mask.cpu().numpy()[0] == True] = 255
         mask_img_all[mask.cpu().numpy()[0] == True] = seg_colors[idx]
         img_filtered = img.copy()
-        img_filtered[mask.cpu().numpy()[0] == False,:] = 0
+        img_filtered[mask.cpu().numpy()[0] == False,:2] = 0
         # save mask region
-        cv2.imwrite(os.path.join(output_dir, 'general_mask','%d/%d.jpg'%(idx,id)), mask_img.numpy(),)
+        cv2.imwrite(os.path.join(output_dir, 'general_mask','%d/%d.jpg'%(idx,id)), mask_img.numpy())
         # save mask img
         cv2.imwrite(os.path.join(output_dir, 'general_img','%d/%d.jpg'%(idx,id)), img_filtered)
 
