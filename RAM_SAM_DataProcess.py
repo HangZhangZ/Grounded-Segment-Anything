@@ -395,7 +395,7 @@ if __name__ == "__main__":
         plt.title('RAM-tags' + tags + '\n')# + 'RAM-tags_chineseing: ' + tags_chinese + '\n'
         plt.axis('off')
         plt.savefig(
-            os.path.join(output_dir, "label_%d.jpg"%(idx)), 
+            os.path.join(output_dir, "ram","label_%d.jpg"%(idx)), 
             bbox_inches="tight", dpi=300, pad_inches=0.0
         )
 
