@@ -380,7 +380,7 @@ if __name__ == "__main__":
 
         transformed_boxes = predictor.transform.apply_boxes_torch(boxes_filt, image.shape[:2]).to(device)
 
-        masks, _, _ = predictor.predict_torch(
+        masks, _, _ = predictor.generate(
             point_coords = None,
             point_labels = None,
             boxes = None,#transformed_boxes.to(device),
