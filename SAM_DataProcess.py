@@ -164,7 +164,7 @@ if __name__ == "__main__":
         predictor = SamAutomaticMaskGenerator(model=build_sam(checkpoint=sam_checkpoint).to(device),
                                               points_per_side=16, # 32
                                               min_mask_region_area=100, # None
-                                              pred_iou_thresh=0.95 # 0.88
+                                              pred_iou_thresh=0.80 # 0.88
                                               ) 
 
     # build loop
@@ -184,10 +184,10 @@ if __name__ == "__main__":
 
         # output: 'segmentation', 'area', 'bbox', 'predicted_iou', 'point_coords', 'stability_score', 'crop_box'
         masks_all = predictor.generate(image)
+        print(len(masks_all))
 
         parse_mask_region(image, output_dir, masks_all, idxs)
-
-        print(idxs)
+        
 
 
 # python SAM_DataProcess.py --config GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py --sam_checkpoint sam_vit_h_4b8939.pth --output_dir "outputs" --device "cuda"
