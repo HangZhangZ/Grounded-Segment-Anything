@@ -168,9 +168,9 @@ if __name__ == "__main__":
             pred_iou_thresh=0.90, # 0.88
             stability_score_thresh= 0.95, #
             stability_score_offset = 1.0, #
-            box_nms_thresh = 0.5, #0.7
+            box_nms_thresh = 0.9, #0.7
             crop_n_layers = 0, #
-            crop_nms_thresh = 0.5, #0.7
+            crop_nms_thresh = 0.9, #0.7
             crop_overlap_ratio = 512 / 1500, #
             crop_n_points_downscale_factor = 1) 
 
