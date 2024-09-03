@@ -161,7 +161,11 @@ if __name__ == "__main__":
         print("Initialize SAM-HQ Predictor")
         predictor = SamAutomaticMaskGenerator(build_sam_hq(checkpoint=sam_hq_checkpoint).to(device))
     else:
-        predictor = SamAutomaticMaskGenerator(model=build_sam(checkpoint=sam_checkpoint).to(device),points_per_side=16,min_mask_region_area=100)
+        predictor = SamAutomaticMaskGenerator(model=build_sam(checkpoint=sam_checkpoint).to(device),
+                                              points_per_side=16, # 32
+                                              min_mask_region_area=100, # None
+                                              pred_iou_thresh=0.95 # 0.88
+                                              ) 
 
     # build loop
     image_paths = glob.glob('image_dataset' + '/*.jpg')
