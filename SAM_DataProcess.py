@@ -19,12 +19,6 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-seg_colors = np.zeros((32,3))
-for c in range(32):
-    seg_colors[c,0] = 255 - ((c+1) % 3)*85
-    seg_colors[c,1] = 255 - (((c+1) // 3) % 3)*85
-    seg_colors[c,2] = 255 - (((c+1) // 9) % 3)*85
-
 
 def show_mask(mask, ax, random_color=False):
     if random_color:
@@ -131,6 +125,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--use_sam_hq", action="store_true", help="using sam-hq for prediction"
     )
+    parser.add_argument("--max_mask", type=int, default=64, help="max num of mask segments")
     parser.add_argument("--input_image", type=str, help="path to image file")
     parser.add_argument("--split", default=",", type=str, help="split for text prompt")
     parser.add_argument("--output_dir", "-o", type=str, default="outputs", required=True, help="output directory")
@@ -146,12 +141,20 @@ if __name__ == "__main__":
     sam_hq_checkpoint = args.sam_hq_checkpoint
     use_sam_hq = args.use_sam_hq
     # image_path = args.input_image
+    max_mask = args.max_mask
     split = args.split
     output_dir = args.output_dir
     box_threshold = args.box_threshold
     text_threshold = args.text_threshold
     iou_threshold = args.iou_threshold
     device = args.device
+
+    # seg colors
+    seg_colors = np.zeros((max_mask,3))
+    for c in range(max_mask):
+        seg_colors[c,0] = 255 - ((c+1) % 3)*85
+        seg_colors[c,1] = 255 - (((c+1) // 3) % 3)*85
+        seg_colors[c,2] = 255 - (((c+1) // 9) % 3)*85
 
     # make dir
     os.makedirs(output_dir, exist_ok=True)
@@ -163,7 +166,7 @@ if __name__ == "__main__":
     else:
         predictor = SamAutomaticMaskGenerator(
             model=build_sam(checkpoint=sam_checkpoint).to(device),
-            points_per_side=16, # 32
+            points_per_side=int(max_mask/2), # 32
             min_mask_region_area=1000, # None
             pred_iou_thresh=0.95, # 0.88
             stability_score_thresh= 0.95, #
@@ -218,7 +221,7 @@ if __name__ == "__main__":
     image_paths = glob.glob('image_dataset' + '/*.jpg')
 
     # make folders
-    for f in range(32):
+    for f in range(max_mask):
         os.makedirs('%s/general_mask/%d'%(output_dir,f),exist_ok=True)
         os.makedirs('%s/local_mask/%d'%(output_dir,f),exist_ok=True)
         os.makedirs('%s/general_img/%d'%(output_dir,f),exist_ok=True)
