@@ -109,7 +109,7 @@ def parse_mask_region(img, output_dir, masks_all, id):
         # save mask img
         cv2.imwrite(os.path.join(output_dir, 'local_img','%d/%d.jpg'%(idx,id)), img_filtered_cropped)
 
-    cv2.imwrite(os.path.join(output_dir,'%d.jpg'%(id)), mask_img_all)
+    cv2.imwrite(os.path.join(output_dir, 'segement', '%d.jpg'%(id)), mask_img_all)
 
 
 if __name__ == "__main__":
@@ -228,6 +228,7 @@ if __name__ == "__main__":
         os.makedirs('%s/general_img/%d'%(output_dir,f),exist_ok=True)
         os.makedirs('%s/local_img/%d'%(output_dir,f),exist_ok=True)
     os.makedirs('%s/ram'%(output_dir),exist_ok=True)
+    os.makedirs('%s/segement'%(output_dir),exist_ok=True)
 
     for idxs,image_path in enumerate(image_paths[:10]):
 
