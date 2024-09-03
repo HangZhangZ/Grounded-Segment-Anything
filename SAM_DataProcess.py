@@ -92,7 +92,7 @@ def parse_mask_region(img, output_dir, masks_all, id):
         mask_img = np.zeros(mask_np.shape)
         mask_img[mask_np == True] = 255
         # mask_img_all[mask_np == True] = seg_colors[idx]
-        mask_img_all[mask_np == True] += seg_colors[idx]/4
+        mask_img_all[mask_np == True] += seg_colors[idx]/5
         img_filtered = img.copy()
         img_filtered[mask_np == False, :] = 0
         # save mask region
