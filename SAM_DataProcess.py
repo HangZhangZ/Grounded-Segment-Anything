@@ -153,9 +153,9 @@ if __name__ == "__main__":
     # seg colors
     seg_colors = np.zeros((max_mask,3))
     for c in range(max_mask):
-        seg_colors[c,0] = 255/5 - ((c+1) % 3)*85/5
-        seg_colors[c,1] = 255/5 - (((c+1) // 3) % 3)*85/5
-        seg_colors[c,2] = 255/5 - (((c+1) // 9) % 3)*85/5
+        seg_colors[c,0] = 51 - ((c+1) % 3)*17
+        seg_colors[c,1] = 51 - (((c+1) // 3) % 3)*17
+        seg_colors[c,2] = 51 - (((c+1) // 9) % 3)*17
 
     # make dir
     os.makedirs(output_dir, exist_ok=True)
