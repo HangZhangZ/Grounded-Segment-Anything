@@ -320,7 +320,7 @@ if __name__ == "__main__":
         predictor = SamPredictor(build_sam(checkpoint=sam_checkpoint).to(device))
 
     # build loop
-    image_paths = glob.glob('image_dataset' + '/*.jpg')
+    image_paths = glob.glob('D:/COCO/train2014' + '/*.jpg')
 
     # make folders
     for f in range(30):
