@@ -167,15 +167,15 @@ if __name__ == "__main__":
         predictor = SamAutomaticMaskGenerator(
             model=build_sam(checkpoint=sam_checkpoint).to(device),
             points_per_side=int(max_mask/2), # 32
-            min_mask_region_area=2000000, # None
+            min_mask_region_area=0, # None
             pred_iou_thresh=0.88, # 0.88
             stability_score_thresh= 0.93, #0.95
             stability_score_offset = 1.0, #
             box_nms_thresh = 0.7, #0.7
-            crop_n_layers = 1, #0
+            crop_n_layers = 0, #0
             crop_nms_thresh = 0.7, #0.7
             crop_overlap_ratio = 512 / 1500, #
-            crop_n_points_downscale_factor = 2 #1
+            crop_n_points_downscale_factor = 1 #1
             ) 
 
         """
