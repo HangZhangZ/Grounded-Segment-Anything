@@ -166,7 +166,7 @@ if __name__ == "__main__":
     else:
         predictor = SamAutomaticMaskGenerator(
             model=build_sam(checkpoint=sam_checkpoint).to(device),
-            points_per_side=int(max_mask/2), # 32
+            points_per_side=int(max_mask/4), # 32
             min_mask_region_area=100000, # None
             pred_iou_thresh=0.95, # 0.88
             stability_score_thresh= 0.95, #0.95
