@@ -153,9 +153,9 @@ if __name__ == "__main__":
     # seg colors
     seg_colors = np.zeros((max_mask,3))
     for c in range(max_mask):
-        seg_colors[c,0] = 51 - ((c+1) % 3)*17
-        seg_colors[c,1] = 51 - (((c+1) // 3) % 3)*17
-        seg_colors[c,2] = 51 - (((c+1) // 9) % 3)*17
+        seg_colors[c,0] = 255 - ((c+1) % 3)*85
+        seg_colors[c,1] = 255 - (((c+1) // 3) % 3)*85
+        seg_colors[c,2] = 255 - (((c+1) // 9) % 3)*85
 
     # make dir
     os.makedirs(output_dir, exist_ok=True)
@@ -167,9 +167,9 @@ if __name__ == "__main__":
     else:
         predictor = SamAutomaticMaskGenerator(
             model=build_sam(checkpoint=sam_checkpoint).to(device),
-            points_per_side=int(max_mask/2), # 32
-            min_mask_region_area=100000, # None
-            pred_iou_thresh=0.88, # 0.88
+            points_per_side=int(max_mask/4), # 32
+            min_mask_region_area=1000000, # None
+            pred_iou_thresh=0.9, # 0.88
             stability_score_thresh= 0.95, #0.95
             stability_score_offset = 1.0, #
             box_nms_thresh = 0.7, #0.7
