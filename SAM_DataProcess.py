@@ -167,7 +167,7 @@ if __name__ == "__main__":
         predictor = SamAutomaticMaskGenerator(
             model=build_sam(checkpoint=sam_checkpoint).to(device),
             points_per_side=int(max_mask/2), # 32
-            min_mask_region_area=1000000, # None
+            min_mask_region_area=100000, # None
             pred_iou_thresh=0.88, # 0.88
             stability_score_thresh= 0.93, #0.95
             stability_score_offset = 1.0, #
@@ -219,7 +219,7 @@ if __name__ == "__main__":
 
 
     # build loop
-    image_paths = glob.glob('image_dataset' + '/*.jpg')
+    image_paths = glob.glob('D:/COCO/train2014' + '/*.jpg')
 
     # make folders
     for f in range(max_mask):
@@ -229,7 +229,7 @@ if __name__ == "__main__":
         os.makedirs('%s/local_img/%d'%(output_dir,f),exist_ok=True)
     os.makedirs('%s/ram'%(output_dir),exist_ok=True)
 
-    for idxs,image_path in enumerate(image_paths):
+    for idxs,image_path in enumerate(image_paths[:10]):
 
         image = cv2.imread(image_path)
 
