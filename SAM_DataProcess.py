@@ -174,7 +174,7 @@ if __name__ == "__main__":
             box_nms_thresh = 0.7, #0.7
             crop_n_layers = 0, #0
             crop_nms_thresh = 0.7, #0.7
-            crop_overlap_ratio = 512 / 1500, #
+            crop_overlap_ratio = 1, #512 / 1500
             crop_n_points_downscale_factor = 1 #1
             ) 
 
