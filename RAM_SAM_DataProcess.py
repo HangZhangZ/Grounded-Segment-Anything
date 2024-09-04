@@ -35,9 +35,9 @@ import torchvision.transforms as TS
 # import openai
 # import nltk
 
-# create segment color list
-seg_colors = np.zeros((30,3))
-for c in range(30):
+# seg colors
+seg_colors = np.zeros((64,3))
+for c in range(64):
     seg_colors[c,0] = 255 - ((c+1) % 3)*85
     seg_colors[c,1] = 255 - (((c+1) // 3) % 3)*85
     seg_colors[c,2] = 255 - (((c+1) // 9) % 3)*85
@@ -257,8 +257,8 @@ if __name__ == "__main__":
         "--output_dir", "-o", type=str, default="outputs", required=True, help="output directory"
     )
 
-    parser.add_argument("--box_threshold", type=float, default=0.1, help="box threshold")
-    parser.add_argument("--text_threshold", type=float, default=0.1, help="text threshold")
+    parser.add_argument("--box_threshold", type=float, default=0.3, help="box threshold")
+    parser.add_argument("--text_threshold", type=float, default=0.3, help="text threshold")
     parser.add_argument("--iou_threshold", type=float, default=0.5, help="iou threshold")
 
     parser.add_argument("--device", type=str, default="cpu", help="running on cpu only!, default=False")
