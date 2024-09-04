@@ -230,7 +230,7 @@ if __name__ == "__main__":
     os.makedirs('%s/ram'%(output_dir),exist_ok=True)
     os.makedirs('%s/segement'%(output_dir),exist_ok=True)
 
-    for idxs,image_path in enumerate(image_paths[:10]):
+    for idxs,image_path in enumerate(image_paths):
 
         image = cv2.imread(image_path)
 
