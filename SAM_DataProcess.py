@@ -112,6 +112,11 @@ def parse_mask_region(img, output_dir, masks_all, id):
     cv2.imwrite(os.path.join(output_dir, 'segement', '%d.jpg'%(id)), mask_img_all)
 
 
+def check_mask_num(masks_all,np_list,):
+
+    
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("SAM_DataProcess", add_help=True)
@@ -230,16 +235,21 @@ if __name__ == "__main__":
     os.makedirs('%s/ram'%(output_dir),exist_ok=True)
     os.makedirs('%s/segement'%(output_dir),exist_ok=True)
 
+    mask_num = np.zeros(82783)
+
     for idxs,image_path in enumerate(image_paths):
 
         image = cv2.imread(image_path)
 
         # output: 'segmentation', 'area', 'bbox', 'predicted_iou', 'point_coords', 'stability_score', 'crop_box'
         masks_all = predictor.generate(image)
+
         print(len(masks_all))
-
-        parse_mask_region(image, output_dir, masks_all, idxs)
         
+        mask_num[idxs] = len(masks_all)
 
+        # parse_mask_region(image, output_dir, masks_all, idxs)
+    
+    np.save('mask_num.npy',mask_num)
 
 # python SAM_DataProcess.py --config GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py --sam_checkpoint sam_vit_h_4b8939.pth --output_dir "outputs" --device "cuda"
