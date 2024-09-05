@@ -112,11 +112,6 @@ def parse_mask_region(img, output_dir, masks_all, id):
     cv2.imwrite(os.path.join(output_dir, 'segement', '%d.jpg'%(id)), mask_img_all)
 
 
-def check_mask_num(masks_all,np_list,):
-
-    
-
-
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser("SAM_DataProcess", add_help=True)
