@@ -352,6 +352,7 @@ if __name__ == "__main__":
         # get mask counts
         mask_num[idxs] = len(masks)
 
+        if idxs % 100 == 0: print(idxs)
         '''
         parse_mask_region(image, output_dir, masks, idx)
         
