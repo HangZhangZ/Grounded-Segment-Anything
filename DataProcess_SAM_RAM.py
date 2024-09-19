@@ -261,8 +261,8 @@ if __name__ == "__main__":
                 ])
     
     # load RAM model
-    if use_ram_plus: ram_model = ram(pretrained=ram_checkpoint, image_size=384, vit='swin_l')
-    else: ram_model = ram_plus(pretrained=ram_checkpoint, image_size=384, vit='swin_l')
+    if use_ram_plus: ram_model = ram_plus(pretrained=ram_checkpoint, image_size=384, vit='swin_l')
+    else: ram_model = ram(pretrained=ram_checkpoint, image_size=384, vit='swin_l')
 
     ram_model.eval()
     ram_model = ram_model.to(device)
@@ -373,4 +373,4 @@ if __name__ == "__main__":
         # save_mask_data(output_dir, masks, boxes_filt, pred_phrases, idx)#tags_chinese
 
     np.save('RAM_SAM_mask_num.npy', mask_num)
-# python RAM_SAM_DataProcess.py --config GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py --ram_checkpoint ram_swin_large_14m.pth --grounded_checkpoint groundingdino_swint_ogc.pth --sam_checkpoint sam_vit_h_4b8939.pth --output_dir "outputs" --device "cuda"
+# python DataProcess_SAM_RAM.py --config GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py --ram_checkpoint ram_swin_large_14m.pth --grounded_checkpoint groundingdino_swint_ogc.pth --sam_checkpoint sam_vit_h_4b8939.pth --output_dir "outputs" --device "cuda"
