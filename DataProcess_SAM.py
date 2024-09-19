@@ -245,6 +245,6 @@ if __name__ == "__main__":
 
         # parse_mask_region(image, output_dir, masks_all, idxs)
     
-    np.save('mask_num.npy',mask_num)
+    np.save('mask_num.npy', mask_num)
 
 # python SAM_DataProcess.py --config GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py --sam_checkpoint sam_vit_h_4b8939.pth --output_dir "outputs" --device "cuda"

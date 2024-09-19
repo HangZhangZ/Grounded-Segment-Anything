@@ -6,7 +6,6 @@ import json
 import torch
 import torchvision
 from PIL import Image
-import litellm
 import glob
 
 # Grounding DINO
@@ -26,21 +25,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Recognize Anything Model & Tag2Text
-# from ram.models import ram
 from ram import inference_ram
-from ram.models import ram#ram_plus
+from ram.models import ram, ram_plus
 import torchvision.transforms as TS
 
-# ChatGPT or nltk is required when using tags_chineses
-# import openai
-# import nltk
-
-# seg colors
-seg_colors = np.zeros((64,3))
-for c in range(64):
-    seg_colors[c,0] = 255 - ((c+1) % 3)*85
-    seg_colors[c,1] = 255 - (((c+1) // 3) % 3)*85
-    seg_colors[c,2] = 255 - (((c+1) // 9) % 3)*85
 
 def load_image(image_path):
     # load image
@@ -55,31 +43,6 @@ def load_image(image_path):
     )
     image, _ = transform(image_pil, None)  # 3, h, w
     return image_pil, image
-
-
-def check_tags_chinese(tags_chinese, pred_phrases, max_tokens=100, model="gpt-3.5-turbo"):
-    object_list = [obj.split('(')[0] for obj in pred_phrases]
-    object_num = []
-    for obj in set(object_list):
-        object_num.append(f'{object_list.count(obj)} {obj}')
-    object_num = ', '.join(object_num)
-    print(f"Correct object number: {object_num}")
-
-    if openai_key:
-        prompt = [
-            {
-                'role': 'system',
-                'content': 'Revise the number in the tags_chinese if it is wrong. ' + \
-                           f'tags_chinese: {tags_chinese}. ' + \
-                           f'True object number: {object_num}. ' + \
-                           'Only give the revised tags_chinese: '
-            }
-        ]
-        response = litellm.completion(model=model, messages=prompt, temperature=0.6, max_tokens=max_tokens)
-        reply = response['choices'][0]['message']['content']
-        # sometimes return with "tags_chinese: xxx, xxx, xxx"
-        tags_chinese = reply.split(':')[-1].strip()
-    return tags_chinese
 
 
 def load_model(model_config_path, model_checkpoint_path, device):
@@ -158,7 +121,6 @@ def save_mask_data(output_dir, mask_list, box_list, label_list, id):#tags_chines
     plt.savefig(os.path.join(output_dir, 'mask_%d.jpg'%(id)), bbox_inches="tight", dpi=300, pad_inches=0.0)
 
     json_data = {
-        # 'tags_chinese': tags_chinese,
         'mask':[{
             'value': value,
             'label': 'background'
@@ -190,8 +152,6 @@ def find_bound_box(mask):
 
 
 def parse_mask_region(img, output_dir, mask_list, id):
-    # value = 0  # 0 for background
-    # plt.figure(figsize=(10, 10))
 
     mask_img_all = img.copy()
 
@@ -203,8 +163,10 @@ def parse_mask_region(img, output_dir, mask_list, id):
         mask_img_all[mask.cpu().numpy()[0] == True] = seg_colors[idx]
         img_filtered = img.copy()
         img_filtered[mask.cpu().numpy()[0] == False,:] = 0
+
         # save mask region
         cv2.imwrite(os.path.join(output_dir, 'general_mask','%d/%d.jpg'%(idx,id)), mask_img.numpy())
+
         # save mask img
         cv2.imwrite(os.path.join(output_dir, 'general_img','%d/%d.jpg'%(idx,id)), img_filtered)
 
@@ -212,8 +174,10 @@ def parse_mask_region(img, output_dir, mask_list, id):
         min_x, max_x, min_y, max_y = find_bound_box(mask.cpu().numpy()[0])
         mask_img_cropped = mask_img[min_x:max_x,min_y:max_y]
         img_filtered_cropped = img_filtered[min_x:max_x,min_y:max_y]
+
         # save mask region
         cv2.imwrite(os.path.join(output_dir, 'local_mask','%d/%d.jpg'%(idx,id)), mask_img_cropped.numpy())
+
         # save mask img
         cv2.imwrite(os.path.join(output_dir, 'local_img','%d/%d.jpg'%(idx,id)), img_filtered_cropped)
 
@@ -247,16 +211,17 @@ if __name__ == "__main__":
         "--sam_hq_checkpoint", type=str, default=None, help="path to sam-hq checkpoint file"
     )
     parser.add_argument(
+        "--use_ram_plus", action="store_true", help="using ram plus"
+    )
+    parser.add_argument(
         "--use_sam_hq", action="store_true", help="using sam-hq for prediction"
     )
-    parser.add_argument("--input_image", type=str, help="path to image file")
+    parser.add_argument("--image_path", default='D:/COCO/train2014',type=str, help="path to image file")
     parser.add_argument("--split", default=",", type=str, help="split for text prompt")
-    parser.add_argument("--openai_key", type=str, help="key for chatgpt")
-    parser.add_argument("--openai_proxy", default=None, type=str, help="proxy for chatgpt")
     parser.add_argument(
         "--output_dir", "-o", type=str, default="outputs", required=True, help="output directory"
     )
-
+    parser.add_argument("--max_seg", type=int, default=64, help="max number of segments per img")
     parser.add_argument("--box_threshold", type=float, default=0.2, help="box threshold")
     parser.add_argument("--text_threshold", type=float, default=0.3, help="text threshold")
     parser.add_argument("--iou_threshold", type=float, default=0.5, help="iou threshold")
@@ -271,28 +236,23 @@ if __name__ == "__main__":
     sam_checkpoint = args.sam_checkpoint
     sam_hq_checkpoint = args.sam_hq_checkpoint
     use_sam_hq = args.use_sam_hq
-    # image_path = args.input_image
+    use_ram_plus = args.use_ram_plus
+    image_path = args.image_path
     split = args.split
-    openai_key = args.openai_key
-    openai_proxy = args.openai_proxy
     output_dir = args.output_dir
+    max_seg = args.max_seg
     box_threshold = args.box_threshold
     text_threshold = args.text_threshold
     iou_threshold = args.iou_threshold
     device = args.device
     
-    # ChatGPT or nltk is required when using tags_chineses
-    # openai.api_key = openai_key
-    # if openai_proxy:
-        # openai.proxy = {"http": openai_proxy, "https": openai_proxy}
-
     # make dir
     os.makedirs(output_dir, exist_ok=True)
 
-    # load model
+    # load SAM model
     model = load_model(config_file, grounded_checkpoint, device=device)
 
-    # initialize Recognize Anything Model
+    # initialize RAM model
     normalize = TS.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
     transform = TS.Compose([
@@ -300,37 +260,49 @@ if __name__ == "__main__":
                     TS.ToTensor(), normalize
                 ])
     
-    # load model
-    # ram_model = ram_plus(pretrained=ram_checkpoint,
-    #                                     image_size=384,
-    #                                     vit='swin_l')
-    ram_model = ram(pretrained=ram_checkpoint,
-                                        image_size=384,
-                                        vit='swin_l')
-    # threshold for tagging
-    # we reduce the threshold to obtain more tags
+    # load RAM model
+    if use_ram_plus: ram_model = ram(pretrained=ram_checkpoint, image_size=384, vit='swin_l')
+    else: ram_model = ram_plus(pretrained=ram_checkpoint, image_size=384, vit='swin_l')
+
     ram_model.eval()
     ram_model = ram_model.to(device)
 
     # initialize SAM
-    if use_sam_hq:
-        print("Initialize SAM-HQ Predictor")
-        predictor = SamPredictor(build_sam_hq(checkpoint=sam_hq_checkpoint).to(device))
-    else:
-        predictor = SamPredictor(build_sam(checkpoint=sam_checkpoint).to(device))
+    if use_sam_hq: predictor = SamPredictor(build_sam_hq(checkpoint=sam_hq_checkpoint).to(device))
+    else: predictor = SamPredictor(build_sam(checkpoint=sam_checkpoint).to(device))
 
-    # build loop
-    image_paths = glob.glob('D:/COCO/train2014' + '/*.jpg')
+    # load imgs
+    image_paths = glob.glob(image_path + '/*.jpg')
+
+    # seg colors, with default 64 max segments
+    seg_colors = np.zeros((max_seg,3))
+
+    for c in range(max_seg):
+        seg_colors[c,0] = 255 - ((c+1) % 4)*63
+        seg_colors[c,1] = 255 - (((c+1) // 4) % 4)*63
+        seg_colors[c,2] = 255 - (((c+1) // 16) % 4)*63
 
     # make folders
     for f in range(30):
+
+        # entire img
         os.makedirs('%s/general_mask/%d'%(output_dir,f),exist_ok=True)
+
+        # cropped mask
         os.makedirs('%s/local_mask/%d'%(output_dir,f),exist_ok=True)
+
+        # entire img
         os.makedirs('%s/general_img/%d'%(output_dir,f),exist_ok=True)
+
+        # cropped img
         os.makedirs('%s/local_img/%d'%(output_dir,f),exist_ok=True)
+
+    # ram results
     os.makedirs('%s/ram'%(output_dir),exist_ok=True)
 
-    for idx,image_path in enumerate(image_paths):
+    mask_num = np.zeros(len(image_paths)) 
+
+    for idxs,image_path in enumerate(image_paths):
 
         # load image
         image_pil, image = load_image(image_path)
@@ -344,18 +316,13 @@ if __name__ == "__main__":
         # Currently ", " is better for detecting single tags
         # while ". " is a little worse in some case
         tags=res[0].replace(' |', ',')
-        # tags_chinese=res[1].replace(' |', ',')
-
-        # print("Image Tags: ", res[0])
-        # print("图像标签: ", res[1])
 
         # run grounding dino model
         boxes_filt, scores, pred_phrases = get_grounding_output(
-            model, image, tags, box_threshold, text_threshold, device=device
-        )
+            model, image, tags, box_threshold, text_threshold, device=device)
 
         image = cv2.imread(image_path)
-        # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         predictor.set_image(image)
 
         size = image_pil.size
@@ -367,13 +334,11 @@ if __name__ == "__main__":
 
         boxes_filt = boxes_filt.cpu()
         # use NMS to handle overlapped boxes
-        print(f"Before NMS: {boxes_filt.shape[0]} boxes")
+        # print(f"Before NMS: {boxes_filt.shape[0]} boxes")
         nms_idx = torchvision.ops.nms(boxes_filt, scores, iou_threshold).numpy().tolist()
         boxes_filt = boxes_filt[nms_idx]
         pred_phrases = [pred_phrases[idx] for idx in nms_idx]
-        print(f"After NMS: {boxes_filt.shape[0]} boxes")
-        # tags_chinese = check_tags_chinese(tags_chinese, pred_phrases)
-        # print(f"Revise tags_chinese with number: {tags_chinese}")
+        # print(f"After NMS: {boxes_filt.shape[0]} boxes")
 
         transformed_boxes = predictor.transform.apply_boxes_torch(boxes_filt, image.shape[:2]).to(device)
 
@@ -384,6 +349,10 @@ if __name__ == "__main__":
             multimask_output = False,
         )
 
+        # get mask counts
+        mask_num[idxs] = len(masks)
+
+        '''
         parse_mask_region(image, output_dir, masks, idx)
         
         # draw output image
@@ -400,7 +369,8 @@ if __name__ == "__main__":
             os.path.join(output_dir, "ram","label_%d.jpg"%(idx)), 
             bbox_inches="tight", dpi=300, pad_inches=0.0
         )
-
+        '''
         # save_mask_data(output_dir, masks, boxes_filt, pred_phrases, idx)#tags_chinese
 
+    np.save('RAM_SAM_mask_num.npy', mask_num)
 # python RAM_SAM_DataProcess.py --config GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py --ram_checkpoint ram_swin_large_14m.pth --grounded_checkpoint groundingdino_swint_ogc.pth --sam_checkpoint sam_vit_h_4b8939.pth --output_dir "outputs" --device "cuda"
