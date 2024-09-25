@@ -156,9 +156,11 @@ def find_bound_box(mask):
 
 
 # sel duplicated masks with defined max mask numbers
-def mix_masks(SAM_mask,RAM_mask,num_limit,threshold):
+def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold):
 
     masks_mixed = []
+    mask_mixed_size = []
+    masks_sorted = []
     valid_R = np.zeros(len(RAM_mask))
 
     for idx_S, mask_S in enumerate(SAM_mask):
@@ -172,20 +174,31 @@ def mix_masks(SAM_mask,RAM_mask,num_limit,threshold):
             mask_R = mask_R.cpu().numpy()[0]
             count_R = len((mask_R == True)[0])
 
-            # find same mask count count_Inter
-            count_Inter = 0
+            # find mask intersection count and percentage
+            count_Inter = np.argwhere(np.logical_and(mask_S == True, mask_R == True)).shape[0]
+            percent_S, percent_R = count_Inter/count_S, count_Inter/count_R
 
-            if count_Inter > threshold: 
-                if count_S > count_R: 
-                    masks_mixed.append(mask_S or mask_R) # or operation
+            if count_Inter > count_threshold: 
+                if percent_S > percent_threshold or percent_R > percent_threshold:
+                    mixed_mask =  np.logical_or(mask_S == True, mask_R == True)
+                    masks_mixed.append(mixed_mask)
+                    mask_mixed_size.append(len((mixed_mask == True)[0]))
                     valid_S = 1
                     valid_R[idx_R] = 1
-
+        
+        # no closer RAM masks
         if valid_S == 0: masks_mixed.append(mask_S)
-        if 
 
+    # get remained RAM masks
+    for idx_R in range(count_R): 
+        if valid_R[idx_R] == 0: masks_mixed.append(RAM_mask[idx_R])
+    
+    # sort from large mask to small
+    size_list = np.array(mask_mixed_size)
+    sorted_list_crop = np.argsort(size_list[::-1])[:num_limit]
+    for m in range(num_limit): masks_sorted.append(masks_mixed[sorted_list_crop[m]])
 
-
+    return masks_sorted
 
 
 def parse_mask_region(img, output_dir, mask_list, id):
