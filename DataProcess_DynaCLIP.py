@@ -190,7 +190,7 @@ def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold):
         if valid_S == 0: masks_mixed.append(mask_S)
 
     # get remained RAM masks
-    for idx_R in range(count_R): 
+    for idx_R in range(len(RAM_mask)): 
         if valid_R[idx_R] == 0: masks_mixed.append(RAM_mask[idx_R])
     
     # sort from large mask to small
