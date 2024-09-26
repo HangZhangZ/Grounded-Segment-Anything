@@ -180,7 +180,7 @@ def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold):
 
             if count_Inter > count_threshold: 
                 if percent_S > percent_threshold or percent_R > percent_threshold:
-                    mixed_mask =  np.logical_or(mask_S == True, mask_R == True)
+                    mixed_mask = np.logical_or(mask_S == True, mask_R == True)
                     masks_mixed.append(mixed_mask)
                     mask_mixed_size.append(len((mixed_mask == True)[0]))
                     valid_S = 1
@@ -266,16 +266,20 @@ if __name__ == "__main__":
     parser.add_argument(
         "--use_sam_hq", action="store_true", help="using sam-hq for prediction"
     )
-    parser.add_argument("--image_path", default='D:/COCO/train2014',type=str, help="path to image file")
-    parser.add_argument("--split", default=",", type=str, help="split for text prompt")
+    parser.add_argument(
+        "--image_path", default='D:/COCO/train2014',type=str, help="path to image file"
+    )
     parser.add_argument(
         "--output_dir", "-o", type=str, default="outputs", required=True, help="output directory"
     )
-    parser.add_argument("--max_seg", type=int, default=64, help="max number of segments per img")
+    parser.add_argument(
+        "--max_seg", type=int, default=64, help="max number of segments per img"
+    )
     parser.add_argument("--box_threshold", type=float, default=0.2, help="box threshold")
     parser.add_argument("--text_threshold", type=float, default=0.3, help="text threshold")
     parser.add_argument("--iou_threshold", type=float, default=0.5, help="iou threshold")
-
+    parser.add_argument("--percent_threshold", type=float, default=0.3, help="percent threshold")
+    parser.add_argument("--count_threshold", type=int, default=100, help="count threshold")
     parser.add_argument("--device", type=str, default="cpu", help="running on cpu only!, default=False")
     args = parser.parse_args()
 
@@ -288,12 +292,13 @@ if __name__ == "__main__":
     use_sam_hq = args.use_sam_hq
     use_ram_plus = args.use_ram_plus
     image_path = args.image_path
-    split = args.split
     output_dir = args.output_dir
     max_seg = args.max_seg
     box_threshold = args.box_threshold
     text_threshold = args.text_threshold
     iou_threshold = args.iou_threshold
+    percent_threshold = args.percent_threshold
+    count_threshold = args.count_threshold
     device = args.device
     
     # make dir
@@ -303,12 +308,8 @@ if __name__ == "__main__":
     model = load_model(config_file, grounded_checkpoint, device=device)
 
     # initialize RAM model
-    normalize = TS.Normalize(mean=[0.485, 0.456, 0.406],
-                                     std=[0.229, 0.224, 0.225])
-    transform = TS.Compose([
-                    TS.Resize((384, 384)),
-                    TS.ToTensor(), normalize
-                ])
+    normalize = TS.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    transform = TS.Compose([TS.Resize((384, 384)),TS.ToTensor(), normalize])
     
     # load RAM model
     if use_ram_plus: ram_model = ram(pretrained=ram_checkpoint, image_size=384, vit='swin_l')
@@ -342,13 +343,14 @@ if __name__ == "__main__":
     # seg colors, with default 64 max segments
     seg_colors = np.zeros((max_seg,3))
 
+    # change if max_seg > 64
     for c in range(max_seg):
         seg_colors[c,0] = 255 - ((c+1) % 4)*63
         seg_colors[c,1] = 255 - (((c+1) // 4) % 4)*63
         seg_colors[c,2] = 255 - (((c+1) // 16) % 4)*63
 
     # make folders
-    for f in range(30):
+    for f in range(max_seg):
 
         # entire img
         os.makedirs('%s/general_mask/%d'%(output_dir,f),exist_ok=True)
@@ -370,7 +372,7 @@ if __name__ == "__main__":
 
     mask_num = np.zeros(len(image_paths)) 
 
-    for idxs,image_path in enumerate(image_paths):
+    for idxs,image_path in enumerate(image_paths[:100]):
 
         # load image
         image_pil, image = load_image(image_path)
@@ -384,7 +386,7 @@ if __name__ == "__main__":
 
         # Currently ", " is better for detecting single tags
         # while ". " is a little worse in some case
-        tags=res[0].replace(' |', ',')
+        tags = res[0].replace(' |', ',')
 
         # run grounding dino model
         boxes_filt, scores, pred_phrases = get_grounding_output(
@@ -423,11 +425,18 @@ if __name__ == "__main__":
             multimask_output = False,
         )
 
+        SAM_mask = [m['segmentation'] for m in masks_autoSAM]
+        RAM_mask = [m['segmentation'] for m in masks_RAM]
+
+        masks_filtered = mix_masks(SAM_mask,RAM_mask,max_seg,count_threshold,percent_threshold)
+
+        parse_mask_region(image, output_dir, masks_filtered, idxs)
+
         # get mask counts
         # mask_num[idxs] = len(masks)
 
         '''
-        parse_mask_region(image, output_dir, masks, idx)
+        
         
         # draw output image
         plt.figure(figsize=(10, 10))
