@@ -195,8 +195,13 @@ def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold):
     
     # sort from large mask to small
     size_list = np.array(mask_mixed_size)
-    sorted_list_crop = np.argsort(size_list[::-1])[:num_limit]
-    for m in range(num_limit): masks_sorted.append(masks_mixed[sorted_list_crop[m]])
+    
+    if len(mask_mixed_size) > num_limit:
+        sorted_list_crop = np.argsort(size_list[::-1])[:num_limit]
+        for m in range(num_limit): masks_sorted.append(masks_mixed[sorted_list_crop[m]])
+    else:
+        sorted_list_crop = np.argsort(size_list[::-1])
+        for m in range(len(mask_mixed_size)): masks_sorted.append(masks_mixed[sorted_list_crop[m]])
 
     return masks_sorted
 
