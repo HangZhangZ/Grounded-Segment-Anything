@@ -165,7 +165,7 @@ def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold):
 
     for idx_S, mask_S in enumerate(SAM_mask):
 
-        mask_S = mask_S.cpu().numpy()[0]
+        # mask_S = mask_S.cpu().numpy()[0]
         count_S = len((mask_S == True)[0])
         valid_S = 0
 
