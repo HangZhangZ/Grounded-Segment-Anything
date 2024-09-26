@@ -312,8 +312,8 @@ if __name__ == "__main__":
     transform = TS.Compose([TS.Resize((384, 384)),TS.ToTensor(), normalize])
     
     # load RAM model
-    if use_ram_plus: ram_model = ram(pretrained=ram_checkpoint, image_size=384, vit='swin_l')
-    else: ram_model = ram_plus(pretrained=ram_checkpoint, image_size=384, vit='swin_l')
+    if use_ram_plus: ram_model = ram_plus(pretrained=ram_checkpoint, image_size=384, vit='swin_l')
+    else: ram_model = ram(pretrained=ram_checkpoint, image_size=384, vit='swin_l')
 
     ram_model.eval()
     ram_model = ram_model.to(device)
@@ -431,6 +431,8 @@ if __name__ == "__main__":
         masks_filtered = mix_masks(SAM_mask,RAM_mask,max_seg,count_threshold,percent_threshold)
 
         parse_mask_region(image, output_dir, masks_filtered, idxs)
+
+        if idxs % 100 == 0: print(idxs)
 
         # get mask counts
         # mask_num[idxs] = len(masks)
