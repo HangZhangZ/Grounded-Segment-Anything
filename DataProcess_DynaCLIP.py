@@ -455,4 +455,4 @@ if __name__ == "__main__":
         '''
         # save_mask_data(output_dir, masks, boxes_filt, pred_phrases, idx)#tags_chinese
 
-# python RAM_SAM_DataProcess.py --config GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py --ram_checkpoint ram_swin_large_14m.pth --grounded_checkpoint groundingdino_swint_ogc.pth --sam_checkpoint sam_vit_h_4b8939.pth --output_dir "outputs_DynaCLIP" --device "cuda"
+# python DataProcess_DynaCLIP.py --config GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py --ram_checkpoint ram_swin_large_14m.pth --grounded_checkpoint groundingdino_swint_ogc.pth --sam_checkpoint sam_vit_h_4b8939.pth --output_dir "outputs_DynaCLIP" --device "cuda"
