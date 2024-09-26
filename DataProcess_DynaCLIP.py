@@ -426,7 +426,7 @@ if __name__ == "__main__":
         )
 
         SAM_mask = [m['segmentation'] for m in masks_autoSAM]
-        RAM_mask = [m['segmentation'] for m in masks_RAM]
+        RAM_mask = [m for m in masks_RAM]
 
         masks_filtered = mix_masks(SAM_mask,RAM_mask,max_seg,count_threshold,percent_threshold)
 
