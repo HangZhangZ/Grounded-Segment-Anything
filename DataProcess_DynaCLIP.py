@@ -208,25 +208,25 @@ def parse_mask_region(img, output_dir, mask_list, id):
     for idx, mask in enumerate(mask_list):
 
         # init general canvas
-        mask_img = torch.zeros(mask_list.shape[-2:])
-        mask_img[mask.cpu().numpy()[0] == True] = 255
-        mask_img_all[mask.cpu().numpy()[0] == True] = seg_colors[idx]
+        mask_img = np.zeros(mask.shape[-2:])
+        mask_img[mask == True] = 255
+        mask_img_all[mask == True] = seg_colors[idx]
         img_filtered = img.copy()
-        img_filtered[mask.cpu().numpy()[0] == False,:] = 0
+        img_filtered[mask == False,:] = 0
 
         # save mask region
-        cv2.imwrite(os.path.join(output_dir, 'general_mask','%d/%d.jpg'%(idx,id)), mask_img.numpy())
+        cv2.imwrite(os.path.join(output_dir, 'general_mask','%d/%d.jpg'%(idx,id)), mask_img)
 
         # save mask img
         cv2.imwrite(os.path.join(output_dir, 'general_img','%d/%d.jpg'%(idx,id)), img_filtered)
 
         # init local canvas
-        min_x, max_x, min_y, max_y = find_bound_box(mask.cpu().numpy()[0])
+        min_x, max_x, min_y, max_y = find_bound_box(mask)
         mask_img_cropped = mask_img[min_x:max_x,min_y:max_y]
         img_filtered_cropped = img_filtered[min_x:max_x,min_y:max_y]
 
         # save mask region
-        cv2.imwrite(os.path.join(output_dir, 'local_mask','%d/%d.jpg'%(idx,id)), mask_img_cropped.numpy())
+        cv2.imwrite(os.path.join(output_dir, 'local_mask','%d/%d.jpg'%(idx,id)), mask_img_cropped)
 
         # save mask img
         cv2.imwrite(os.path.join(output_dir, 'local_img','%d/%d.jpg'%(idx,id)), img_filtered_cropped)
