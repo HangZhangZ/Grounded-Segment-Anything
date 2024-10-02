@@ -178,16 +178,24 @@ def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold):
             count_Inter = np.argwhere(np.logical_and(mask_S == True, mask_R == True)).shape[0]
             percent_S, percent_R = count_Inter/count_S, count_Inter/count_R
 
+            # overlapped, operate Union
             if count_Inter > count_threshold: 
                 if percent_S > percent_threshold or percent_R > percent_threshold:
-                    mixed_mask = np.logical_or(mask_S == True, mask_R == True)
-                    masks_mixed.append(mixed_mask)
-                    mask_mixed_size.append(len((mixed_mask == True)[0]))
-                    valid_S = 1
-                    valid_R[idx_R] = 1
+                    if valid_S == 0:
+                        mixed_mask = np.logical_or(mask_S == True, mask_R == True)
+                        valid_R[idx_R] = 1
+                    else:
+                        mixed_mask = np.logical_or(mixed_mask == True, mask_R == True)
+                        valid_S = 1
+                        valid_R[idx_R] = 1
         
         # no closer RAM masks
-        if valid_S == 0: masks_mixed.append(mask_S)
+        if valid_S == 0: 
+            masks_mixed.append(mask_S)
+            mask_mixed_size.append(len((mixed_mask == True)[0]))
+        else: 
+            masks_mixed.append(mixed_mask)
+            mask_mixed_size.append(len((mixed_mask == True)[0]))
 
     # get remained RAM masks
     for idx_R in range(len(RAM_mask)): 
