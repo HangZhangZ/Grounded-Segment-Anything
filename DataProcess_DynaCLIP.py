@@ -193,7 +193,7 @@ def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold,min_
         if valid_S == 0 and max_pixel > len((mask_S == True)[0]) > min_pixel: 
             masks_mixed.append(mask_S)
             mask_mixed_size.append()
-        elif max_pixel > len((mixed_mask == True)[0]) > min_pixel: 
+        elif mixed_mask and max_pixel > len((mixed_mask == True)[0]) > min_pixel: 
             masks_mixed.append(mixed_mask)
             mask_mixed_size.append(len((mixed_mask == True)[0]))
 
