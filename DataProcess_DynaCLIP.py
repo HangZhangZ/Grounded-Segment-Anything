@@ -156,7 +156,7 @@ def find_bound_box(mask):
 
 
 # sel duplicated masks with defined max mask numbers
-def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold):
+def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold,min_pixel,max_pixel):
 
     masks_mixed = []
     mask_mixed_size = []
@@ -190,16 +190,18 @@ def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold):
                         valid_R[idx_R] = 1
         
         # no closer RAM masks
-        if valid_S == 0: 
+        if valid_S == 0 and max_pixel > len((mask_S == True)[0]) > min_pixel: 
             masks_mixed.append(mask_S)
-            mask_mixed_size.append(len((mask_S == True)[0]))
-        else: 
+            mask_mixed_size.append()
+        elif max_pixel > len((mixed_mask == True)[0]) > min_pixel: 
             masks_mixed.append(mixed_mask)
             mask_mixed_size.append(len((mixed_mask == True)[0]))
 
     # get remained RAM masks
     for idx_R in range(len(RAM_mask)): 
-        if valid_R[idx_R] == 0: masks_mixed.append(RAM_mask[idx_R])
+        if valid_R[idx_R] == 0 and max_pixel > len((RAM_mask[idx_R] == True)[0]) > min_pixel: 
+            masks_mixed.append(RAM_mask[idx_R])
+            mask_mixed_size.append(len((RAM_mask[idx_R] == True)[0]))
     
     # sort from large mask to small
     size_list = np.array(mask_mixed_size)
@@ -293,6 +295,8 @@ if __name__ == "__main__":
     parser.add_argument("--iou_threshold", type=float, default=0.5, help="iou threshold")
     parser.add_argument("--percent_threshold", type=float, default=0.3, help="percent threshold")
     parser.add_argument("--count_threshold", type=int, default=100, help="count threshold")
+    parser.add_argument("--min_pixels", type=int, default=1000, help="min pixels needed")
+    parser.add_argument("--max_pixels", type=int, default=100000, help="max pixels need to filter out")
     parser.add_argument("--device", type=str, default="cpu", help="running on cpu only!, default=False")
     args = parser.parse_args()
 
@@ -312,6 +316,8 @@ if __name__ == "__main__":
     iou_threshold = args.iou_threshold
     percent_threshold = args.percent_threshold
     count_threshold = args.count_threshold
+    min_pixels = args.min_pixels
+    max_pixels = args.max_pixels
     device = args.device
     
     # make dir
@@ -406,7 +412,7 @@ if __name__ == "__main__":
             model, image, tags, box_threshold, text_threshold, device=device)
 
         image = cv2.imread(image_path)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
         # auto SAM inference
         masks_autoSAM = auto_predictor.generate(image)
@@ -441,7 +447,7 @@ if __name__ == "__main__":
         SAM_mask = [m['segmentation'] for m in masks_autoSAM]
         RAM_mask = [m for m in masks_RAM]
 
-        masks_filtered = mix_masks(SAM_mask,RAM_mask,max_seg,count_threshold,percent_threshold)
+        masks_filtered = mix_masks(SAM_mask,RAM_mask,max_seg,count_threshold,percent_threshold,min_pixels,max_pixels)
 
         parse_mask_region(image, output_dir, masks_filtered, idxs)
 
