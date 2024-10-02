@@ -192,7 +192,7 @@ def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold):
         # no closer RAM masks
         if valid_S == 0: 
             masks_mixed.append(mask_S)
-            mask_mixed_size.append(len((mixed_mask == True)[0]))
+            mask_mixed_size.append(len((mask_S == True)[0]))
         else: 
             masks_mixed.append(mixed_mask)
             mask_mixed_size.append(len((mixed_mask == True)[0]))
