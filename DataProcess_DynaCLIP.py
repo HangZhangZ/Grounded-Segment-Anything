@@ -215,6 +215,8 @@ def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold,min_
         sorted_list_crop = np.argsort(size_list[::-1])
         for m in range(len(mask_mixed_size)): masks_sorted.append(masks_mixed[sorted_list_crop[m]])
 
+    print(mask_mixed_size)
+
     return masks_sorted
 
 
@@ -393,7 +395,7 @@ if __name__ == "__main__":
 
     mask_num = np.zeros(len(image_paths)) 
 
-    for idxs,image_path in enumerate(image_paths[:100]):
+    for idxs,image_path in enumerate(image_paths[:10]):
 
         # load image
         image_pil, image = load_image(image_path)
@@ -453,7 +455,7 @@ if __name__ == "__main__":
 
         parse_mask_region(image, output_dir, masks_filtered, idxs)
 
-        if idxs % 100 == 0: print(idxs)
+        if idxs % 10 == 0: print(idxs)
 
         # get mask counts
         # mask_num[idxs] = len(masks)
