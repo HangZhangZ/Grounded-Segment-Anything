@@ -167,11 +167,11 @@ def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold,min_
 
         # mask_S = mask_S.cpu().numpy()[0]
         count_S = len((mask_S == True)[0])
+        print(count_S)
         valid_S = 0
 
         for idx_R, mask_R in enumerate(RAM_mask):
 
-            mask_R = mask_R.cpu().numpy()[0]
             count_R = len((mask_R == True)[0])
 
             # find mask intersection count and percentage
@@ -192,9 +192,9 @@ def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold,min_
                         valid_R[idx_R] = 1
         
         # no closer RAM masks
-        if valid_S == 0 and max_pixel > len((mask_S == True)[0]) > min_pixel: 
+        if valid_S == 0 and max_pixel > count_S > min_pixel: 
             masks_mixed.append(mask_S)
-            mask_mixed_size.append(len((mask_S == True)[0]))
+            mask_mixed_size.append(count_S)
         elif max_pixel > len((mixed_mask == True)[0]) > min_pixel: 
             masks_mixed.append(mixed_mask)
             mask_mixed_size.append(len((mixed_mask == True)[0]))
@@ -449,9 +449,7 @@ if __name__ == "__main__":
         )
 
         SAM_mask = [m['segmentation'] for m in masks_autoSAM]
-        print(SAM_mask)
-        RAM_mask = [m for m in masks_RAM]
-        print(RAM_mask)
+        RAM_mask = [m.cpu().numpy()[0] for m in masks_RAM]
 
         masks_filtered = mix_masks(SAM_mask,RAM_mask,max_seg,count_threshold,percent_threshold,min_pixels,max_pixels)
 
