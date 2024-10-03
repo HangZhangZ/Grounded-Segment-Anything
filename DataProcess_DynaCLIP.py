@@ -395,7 +395,7 @@ if __name__ == "__main__":
 
     mask_num = np.zeros(len(image_paths)) 
 
-    for idxs,image_path in enumerate(image_paths[:10]):
+    for idxs,image_path in enumerate(image_paths[:2]):
 
         # load image
         image_pil, image = load_image(image_path)
@@ -449,7 +449,9 @@ if __name__ == "__main__":
         )
 
         SAM_mask = [m['segmentation'] for m in masks_autoSAM]
+        print(SAM_mask)
         RAM_mask = [m for m in masks_RAM]
+        print(RAM_mask)
 
         masks_filtered = mix_masks(SAM_mask,RAM_mask,max_seg,count_threshold,percent_threshold,min_pixels,max_pixels)
 
