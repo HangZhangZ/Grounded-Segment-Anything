@@ -156,12 +156,15 @@ def find_bound_box(mask):
 
 
 # sel duplicated masks with defined max mask numbers
-def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold,min_pixel,max_pixel):
+def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold,min_pix,max_pix):
 
     masks_mixed = []
     mask_mixed_size = []
     masks_sorted = []
     valid_R = np.zeros(len(RAM_mask))
+    canvas_pix = SAM_mask[0].shape[0]*SAM_mask[0].shape[1]
+    min_pixel = int(canvas_pix*min_pix)
+    max_pixel = int(canvas_pix*max_pix)
 
     for idx_S, mask_S in enumerate(SAM_mask):
 
@@ -213,8 +216,6 @@ def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold,min_
     else:
         sorted_list_crop = np.argsort(size_list[::-1])
         for m in range(len(mask_mixed_size)): masks_sorted.append(masks_mixed[sorted_list_crop[m]])
-
-    print(sorted_list_crop)
 
     return masks_sorted
 
@@ -298,8 +299,8 @@ if __name__ == "__main__":
     parser.add_argument("--iou_threshold", type=float, default=0.5, help="iou threshold")
     parser.add_argument("--percent_threshold", type=float, default=0.3, help="percent threshold")
     parser.add_argument("--count_threshold", type=int, default=100, help="count threshold")
-    parser.add_argument("--min_pixels", type=int, default=1000, help="min pixels needed")
-    parser.add_argument("--max_pixels", type=int, default=100000, help="max pixels need to filter out")
+    parser.add_argument("--min_pixels", type=float, default=0.01, help="min pixels needed")
+    parser.add_argument("--max_pixels", type=float, default=0.9, help="max pixels need to filter out")
     parser.add_argument("--device", type=str, default="cpu", help="running on cpu only!, default=False")
     args = parser.parse_args()
 
