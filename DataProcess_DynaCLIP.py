@@ -178,6 +178,8 @@ def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold,min_
             count_Inter = np.argwhere(np.logical_and(mask_S == True, mask_R == True)).shape[0]
             percent_S, percent_R = count_Inter/count_S, count_Inter/count_R
 
+            mixed_mask = np.zeros_like(mask_S)
+
             # overlapped, operate Union
             if count_Inter > count_threshold: 
                 if percent_S > percent_threshold or percent_R > percent_threshold:
@@ -193,7 +195,7 @@ def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold,min_
         if valid_S == 0 and max_pixel > len((mask_S == True)[0]) > min_pixel: 
             masks_mixed.append(mask_S)
             mask_mixed_size.append(len((mask_S == True)[0]))
-        elif mixed_mask and max_pixel > len((mixed_mask == True)[0]) > min_pixel: 
+        elif max_pixel > len((mixed_mask == True)[0]) > min_pixel: 
             masks_mixed.append(mixed_mask)
             mask_mixed_size.append(len((mixed_mask == True)[0]))
 
