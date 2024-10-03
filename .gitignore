@@ -133,3 +133,10 @@ dmypy.json
 outputs/
 
 .idea/
+
+# image
+*.jpg
+*.png
+
+# img path
+.outputs_DynaCLIP
