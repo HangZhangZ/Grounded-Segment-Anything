@@ -388,14 +388,14 @@ if __name__ == "__main__":
         # cropped img
         os.makedirs('%s/local_img/%d'%(output_dir,f),exist_ok=True)
 
-        # original img with masks
-        os.makedirs('%s/original_img/%d'%(output_dir,f),exist_ok=True)
+    # original img with masks
+    os.makedirs('%s/original_img'%(output_dir),exist_ok=True)
 
     # ram results
     os.makedirs('%s/ram'%(output_dir),exist_ok=True)
 
-    # segment results
-    os.makedirs('%s/segement'%(output_dir),exist_ok=True)
+    # sam results
+    os.makedirs('%s/sam'%(output_dir),exist_ok=True)
 
     mask_num = np.zeros(len(image_paths)) 
 
