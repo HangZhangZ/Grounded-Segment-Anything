@@ -251,7 +251,7 @@ def parse_mask_region(img, output_dir, mask_list, id):
         # save mask img
         cv2.imwrite(os.path.join(output_dir, 'local_img','%d/%d.jpg'%(idx,id)), img_filtered_cropped)
 
-    cv2.imwrite(os.path.join(output_dir,'%d.jpg'%(id)), mask_img_all)
+    cv2.imwrite(os.path.join(output_dir,'original_img','%d.jpg'%(id)), mask_img_all)
 
 
     # json_data = {
@@ -364,14 +364,14 @@ if __name__ == "__main__":
     # load imgs paths
     image_paths = glob.glob(image_path + '/*.jpg')
 
-    # seg colors, with default 64 max segments
+    # seg colors, with default 32 max segments
     seg_colors = np.zeros((max_seg,3))
 
-    # change if max_seg > 64
+    # change if max_seg > 32
     for c in range(max_seg):
-        seg_colors[c,0] = 255 - ((c+1) % 4)*63
-        seg_colors[c,1] = 255 - (((c+1) // 4) % 4)*63
-        seg_colors[c,2] = 255 - (((c+1) // 16) % 4)*63
+        seg_colors[c,0] = 255 - ((c+1) % 2)*127
+        seg_colors[c,1] = 255 - (((c+1) // 2) % 4)*63
+        seg_colors[c,2] = 255 - (((c+1) // 8) % 4)*63
 
     # make folders
     for f in range(max_seg):
@@ -387,6 +387,9 @@ if __name__ == "__main__":
 
         # cropped img
         os.makedirs('%s/local_img/%d'%(output_dir,f),exist_ok=True)
+
+        # original img with masks
+        os.makedirs('%s/original_img/%d'%(output_dir,f),exist_ok=True)
 
     # ram results
     os.makedirs('%s/ram'%(output_dir),exist_ok=True)
