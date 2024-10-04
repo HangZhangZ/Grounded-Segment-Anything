@@ -186,11 +186,11 @@ def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold,min_
                 if percent_S > percent_threshold or percent_R > percent_threshold:
                     if valid_R == 0:
                         mixed_mask = np.logical_or(mask_R == True, mask_S == True)
-                        valid_R[idx_R] = 1
+                        valid_S[idx_S] = 1
                     else:
                         mixed_mask = np.logical_or(mixed_mask == True, mask_S == True)
                         valid_R = 1
-                        valid_R[idx_R] = 1
+                        valid_S[idx_S] = 1
         
         # RAM mask has no closer SAM masks
         if valid_R == 0 and max_pixel > count_R > min_pixel: 
