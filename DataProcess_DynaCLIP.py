@@ -235,10 +235,10 @@ def parse_mask_region(img, output_dir, mask_list, id):
         img_filtered[mask == False,:] = 0
 
         # save mask region
-        cv2.imwrite(os.path.join(output_dir, 'general_mask','%d/%d.jpg'%(idx,id)), mask_img)
+        # cv2.imwrite(os.path.join(output_dir, 'general_mask','%d/%d.jpg'%(idx,id)), mask_img)
 
         # save mask img
-        cv2.imwrite(os.path.join(output_dir, 'general_img','%d/%d.jpg'%(idx,id)), img_filtered)
+        # cv2.imwrite(os.path.join(output_dir, 'general_img','%d/%d.jpg'%(idx,id)), img_filtered)
 
         # init local canvas
         min_x, max_x, min_y, max_y = find_bound_box(mask)
@@ -246,7 +246,7 @@ def parse_mask_region(img, output_dir, mask_list, id):
         img_filtered_cropped = img_filtered[min_x:max_x,min_y:max_y]
 
         # save mask region
-        cv2.imwrite(os.path.join(output_dir, 'local_mask','%d/%d.jpg'%(idx,id)), mask_img_cropped)
+        # cv2.imwrite(os.path.join(output_dir, 'local_mask','%d/%d.jpg'%(idx,id)), mask_img_cropped)
 
         # save mask img
         cv2.imwrite(os.path.join(output_dir, 'local_img','%d/%d.jpg'%(idx,id)), img_filtered_cropped)
