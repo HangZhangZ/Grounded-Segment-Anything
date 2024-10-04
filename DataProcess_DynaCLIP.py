@@ -161,51 +161,51 @@ def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold,min_
     masks_mixed = []
     mask_mixed_size = []
     masks_sorted = []
-    valid_R = np.zeros(len(RAM_mask))
+    valid_S = np.zeros(len(SAM_mask))
     canvas_pix = SAM_mask[0].shape[0]*SAM_mask[0].shape[1]
     min_pixel = int(canvas_pix*min_pix)
     max_pixel = int(canvas_pix*max_pix)
 
-    for idx_S, mask_S in enumerate(SAM_mask):
+    for idx_R, mask_R in enumerate(RAM_mask):
 
-        # mask_S = mask_S.cpu().numpy()[0]
-        count_S = len(np.where(mask_S == True)[0])
-        valid_S = 0
+        count_R = len(np.where(mask_R == True)[0])
+        valid_R = 0
 
-        for idx_R, mask_R in enumerate(RAM_mask):
+        for idx_S, mask_S in enumerate(SAM_mask):
 
-            count_R = len(np.where(mask_R == True)[0])
+            count_S = len(np.where(mask_S == True)[0])
 
             # find mask intersection count and percentage
             count_Inter = np.argwhere(np.logical_and(mask_S == True, mask_R == True)).shape[0]
             percent_S, percent_R = count_Inter/count_S, count_Inter/count_R
 
-            mixed_mask = np.zeros_like(mask_S)
+            mixed_mask = np.zeros_like(mask_R)
 
             # overlapped, operate Union
             if count_Inter > count_threshold: 
                 if percent_S > percent_threshold or percent_R > percent_threshold:
-                    if valid_S == 0:
-                        mixed_mask = np.logical_or(mask_S == True, mask_R == True)
+                    if valid_R == 0:
+                        mixed_mask = np.logical_or(mask_R == True, mask_S == True)
                         valid_R[idx_R] = 1
                     else:
-                        mixed_mask = np.logical_or(mixed_mask == True, mask_R == True)
-                        valid_S = 1
+                        mixed_mask = np.logical_or(mixed_mask == True, mask_S == True)
+                        valid_R = 1
                         valid_R[idx_R] = 1
         
-        # no closer RAM masks
-        if valid_S == 0 and max_pixel > count_S > min_pixel: 
-            masks_mixed.append(mask_S)
-            mask_mixed_size.append(count_S)
+        # RAM mask has no closer SAM masks
+        if valid_R == 0 and max_pixel > count_R > min_pixel: 
+            masks_mixed.append(mask_R)
+            mask_mixed_size.append(count_R)
+
         elif max_pixel > len(np.where(mixed_mask == True)[0]) > min_pixel: 
             masks_mixed.append(mixed_mask)
             mask_mixed_size.append(len(np.where(mixed_mask == True)[0]))
 
-    # get remained RAM masks
-    for idx_R in range(len(RAM_mask)): 
-        if valid_R[idx_R] == 0 and max_pixel > len(np.where(RAM_mask[idx_R] == True)[0]) > min_pixel: 
-            masks_mixed.append(RAM_mask[idx_R])
-            mask_mixed_size.append(len(np.where(RAM_mask[idx_R] == True)[0]))
+    # get remained SAM masks
+    for idx_S in range(len(SAM_mask)): 
+        if valid_S[idx_S] == 0 and max_pixel > len(np.where(SAM_mask[idx_S] == True)[0]) > min_pixel: 
+            masks_mixed.append(SAM_mask[idx_S])
+            mask_mixed_size.append(len(np.where(SAM_mask[idx_S] == True)[0]))
     
     # sort from large mask to small
     size_list = np.array(mask_mixed_size)
