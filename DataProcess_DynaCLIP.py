@@ -396,7 +396,7 @@ if __name__ == "__main__":
 
     mask_num = np.zeros(len(image_paths)) 
 
-    for idxs,image_path in enumerate(image_paths[:100]):
+    for idxs,image_path in enumerate(image_paths[:1000]):
 
         # load image
         image_pil, image = load_image(image_path)
@@ -456,7 +456,7 @@ if __name__ == "__main__":
 
         parse_mask_region(image, output_dir, masks_filtered, idxs)
 
-        if idxs % 10 == 0: print(idxs)
+        if idxs % 100 == 0: print(idxs)
 
         # get mask counts
         # mask_num[idxs] = len(masks)
