@@ -405,7 +405,7 @@ if __name__ == "__main__":
     mask_num = np.zeros(len(image_paths))
 
     # store all bbox of each images
-    bbox_all = np.zeros((len(image_paths)*max_seg,4),dtype=np.int32)
+    bbox_all = np.zeros((len(image_paths),max_seg,4),dtype=np.int32)
 
     # store all mask counts of each images
     mask_count_all = np.zeros((len(image_paths)),dtype=np.int32)
