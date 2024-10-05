@@ -221,9 +221,12 @@ def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold,min_
     return masks_sorted
 
 
-def parse_mask_region(img, output_dir, mask_list, id):
+def parse_mask_region(img, output_dir, mask_list, id, max_mask):
 
     mask_img_all = img.copy()
+
+    # store masks bounding boxes
+    mask_bbox = np.zeros((max_mask,4),dtype=np.int32)
 
     for idx, mask in enumerate(mask_list):
 
@@ -242,6 +245,7 @@ def parse_mask_region(img, output_dir, mask_list, id):
 
         # init local canvas
         min_x, max_x, min_y, max_y = find_bound_box(mask)
+        mask_bbox[idx] = np.array([min_x, max_x, min_y, max_y])
         mask_img_cropped = mask_img[min_x:max_x,min_y:max_y]
         img_filtered_cropped = img_filtered[min_x:max_x,min_y:max_y]
 
@@ -253,6 +257,7 @@ def parse_mask_region(img, output_dir, mask_list, id):
 
     cv2.imwrite(os.path.join(output_dir,'original_img','%d.jpg'%(id)), mask_img_all)
 
+    return mask_bbox
 
     # json_data = {
     #     # 'tags_chinese': tags_chinese,
@@ -397,7 +402,13 @@ if __name__ == "__main__":
     # sam results
     os.makedirs('%s/sam'%(output_dir),exist_ok=True)
 
-    mask_num = np.zeros(len(image_paths)) 
+    mask_num = np.zeros(len(image_paths))
+
+    # store all bbox of each images
+    bbox_all = np.zeros((len(image_paths)*max_seg,4),dtype=np.int32)
+
+    # store all mask counts of each images
+    mask_count_all = np.zeros((len(image_paths)),dtype=np.int32)
 
     for idxs,image_path in enumerate(image_paths[:1000]):
 
@@ -457,15 +468,18 @@ if __name__ == "__main__":
 
         masks_filtered = mix_masks(SAM_mask,RAM_mask,max_seg,count_threshold,percent_threshold,min_pixels,max_pixels)
 
-        parse_mask_region(image, output_dir, masks_filtered, idxs)
+        bbox_all[idxs] = parse_mask_region(image, output_dir, masks_filtered, idxs, max_seg)
+        mask_count_all[idxs] = len(masks_filtered)
 
         if idxs % 100 == 0: print(idxs)
+
+    np.save('bbox_all.npy',bbox_all)
+    np.save('mask_count_all.npy',mask_count_all)
 
         # get mask counts
         # mask_num[idxs] = len(masks)
 
-        '''
-        
+    '''
         
         # draw output image
         plt.figure(figsize=(10, 10))
@@ -481,7 +495,7 @@ if __name__ == "__main__":
             os.path.join(output_dir, "ram","label_%d.jpg"%(idx)), 
             bbox_inches="tight", dpi=300, pad_inches=0.0
         )
-        '''
+    '''
         # save_mask_data(output_dir, masks, boxes_filt, pred_phrases, idx)#tags_chinese
 
 # python DataProcess_DynaCLIP.py --config GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py --ram_checkpoint ram_swin_large_14m.pth --grounded_checkpoint groundingdino_swint_ogc.pth --sam_checkpoint sam_vit_h_4b8939.pth --output_dir "outputs_DynaCLIP" --device "cuda"
