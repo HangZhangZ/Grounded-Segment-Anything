@@ -7,6 +7,7 @@ import torch
 import torchvision
 from PIL import Image
 import glob
+from skimage.transform import resize
 
 # shapely Geo Process
 # from shapely.geometry import Polygon,MultiPolygon,LineString,LinearRing,MultiPoint,MultiLineString#,Point,box
@@ -255,7 +256,7 @@ def parse_mask_region(img, output_dir, mask_list, id, max_mask):
         # save mask img
         cv2.imwrite(os.path.join(output_dir, 'local_img','%d/%d.jpg'%(idx,id)), img_filtered_cropped)
 
-    cv2.imwrite(os.path.join(output_dir,'original_img','%d.jpg'%(id)), mask_img_all)
+    cv2.imwrite(os.path.join(output_dir,'original_img','%d.jpg'%(id)), resize(mask_img_all, (128, 128, 3)))
 
     return mask_bbox
 
@@ -473,8 +474,8 @@ if __name__ == "__main__":
 
         if idxs % 100 == 0: print(idxs)
 
-    np.save('bbox_all.npy',bbox_all)
-    np.save('mask_count_all.npy',mask_count_all)
+    np.save('%s/bbox_all.npy'%(output_dir),bbox_all)
+    np.save('%s/mask_count_all.npy'%(output_dir),mask_count_all)
 
         # get mask counts
         # mask_num[idxs] = len(masks)
