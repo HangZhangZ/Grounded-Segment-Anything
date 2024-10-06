@@ -253,7 +253,7 @@ def parse_mask_region(img, output_dir, mask_list, id, max_mask):
         # cv2.imwrite(os.path.join(output_dir, 'local_mask','%d/%d.jpg'%(idx,id)), mask_img_cropped)
 
         # save mask img
-        cv2.imwrite(os.path.join(output_dir, 'local_img','%d/%d.jpg'%(idx,id)), img_filtered_cropped)
+        cv2.imwrite(os.path.join(output_dir, 'local_img','%d/%d.jpg'%(idx,id)), cv2.resize(img_filtered_cropped, (224, 224)))
 
     cv2.imwrite(os.path.join(output_dir,'original_img','%d.jpg'%(id)), cv2.resize(mask_img_all, (128, 128)))
 
