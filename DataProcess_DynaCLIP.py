@@ -170,10 +170,12 @@ def mix_masks(SAM_mask,RAM_mask,num_limit,count_threshold,percent_threshold,min_
 
         count_R = len(np.where(mask_R == True)[0])
         valid_R = 0
+        if count_R < 10: continue
 
         for idx_S, mask_S in enumerate(SAM_mask):
 
             count_S = len(np.where(mask_S == True)[0])
+            if count_S < 10: continue
 
             # find mask intersection count and percentage
             count_Inter = np.argwhere(np.logical_and(mask_S == True, mask_R == True)).shape[0]
