@@ -410,7 +410,7 @@ if __name__ == "__main__":
     # store all mask counts of each images
     mask_count_all = np.zeros((len(image_paths)),dtype=np.int32)
 
-    for idxs,image_path in enumerate(image_paths[:1000]):
+    for idxs,image_path in enumerate(image_paths):
 
         # load image
         image_pil, image = load_image(image_path)
