@@ -255,7 +255,7 @@ def parse_mask_region(img, output_dir, mask_list, id, max_mask):
         # save mask img
         cv2.imwrite(os.path.join(output_dir, 'local_img','%d/%d.jpg'%(idx,id)), img_filtered_cropped)
 
-    cv2.imwrite(os.path.join(output_dir,'original_img','%d.jpg'%(id)), cv2.resize(mask_img_all, (128, 128, 3)))
+    cv2.imwrite(os.path.join(output_dir,'original_img','%d.jpg'%(id)), cv2.resize(mask_img_all, (128, 128)))
 
     return mask_bbox
 
